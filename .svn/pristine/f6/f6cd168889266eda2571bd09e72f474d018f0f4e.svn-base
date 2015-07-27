@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="entity.MealUser">  
+	<resultMap id="mealUserResult" type="MealUser">
+		<result column="id" property="id" jdbcType="DECIMAL" />
+		<result column="user_id" property="user_id" jdbcType="DECIMAL" />
+		<result column="menu_id" property="menu_id" jdbcType="DECIMAL" />
+		<result column="order_count" property="order_count" jdbcType="DECIMAL" />
+    </resultMap>
+
+	<sql id="sf-mealUser">
+		<where>
+			<if test="id != null">
+				and a.id = #{id}
+			</if>
+			<if test="user_id != null">
+				and a.user_id = #{user_id}
+			</if>
+			<if test="menu_id != null">
+				and a.menu_id = #{menu_id}
+			</if>
+			<if test="order_count != null">
+				and a.order_count = #{order_count}
+			</if>
+			<if test="map.keyword != null">
+				and a.keyword like concat('%',#{map.keyword},'%')
+			</if>
+			<if test="map.ids != null">
+				and a.id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+		<if test="map.sort != null">
+			order by a.id desc
+		</if>
+	</sql>
+
+	<select id="selectMealUser" resultType="MealUser" parameterType="MealUser">
+		select a.* from meal_user a
+		<include refid="sf-mealUser" />
+	</select>
+	
+	<select id="selectMealUserList" resultType="MealUser" parameterType="MealUser">
+		select a.* from meal_user a
+		<include refid="sf-mealUser" />
+	</select>
+	
+	<select id="selectMealUserCount" resultType="int" parameterType="MealUser">
+		select count(1) from meal_user a
+		<include refid="sf-mealUser" />
+	</select>
+	
+	<select id="selectMealUserPageList" resultType="MealUser" parameterType="MealUser">
+		select a.* from meal_user a
+		<include refid="sf-mealUser" />
+		limit #{map.startIndex},#{map.pageSize}
+	</select>
+	
+	<select id="selectMealUserSort" resultType="int" parameterType="MealUser">
+		select max(a.id) from meal_user a
+		<include refid="sf-mealUser" />
+	</select>
+
+	<insert id="insertMealUser" parameterType="MealUser" useGeneratedKeys="true"
+		keyProperty="id"> 
+		<![CDATA[insert into meal_user (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">id,</if> 
+			<if test="user_id != null">user_id,</if> 
+			<if test="menu_id != null">menu_id,</if> 
+			<if test="order_count != null">order_count,</if> 
+		</trim>
+		<![CDATA[) values (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">#{id},</if> 
+			<if test="user_id != null">#{user_id},</if> 
+			<if test="menu_id != null">#{menu_id},</if> 
+			<if test="order_count != null">#{order_count},</if> 
+		</trim>
+		<![CDATA[)]]>
+	</insert>
+
+	<update id="updateMealUser" parameterType="MealUser">
+		update meal_user
+		<set>
+			<if test="user_id != null">user_id=#{user_id},</if>
+			<if test="menu_id != null">menu_id=#{menu_id},</if>
+			<if test="order_count != null">order_count=#{order_count},</if>
+		</set>
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</update>
+	
+	<delete id="deleteMealUser" parameterType="MealUser">
+		delete from meal_user 
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</delete>
+</mapper>

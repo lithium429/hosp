@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="entity.LeaveVerifyRecord">  
+	<resultMap id="leaveVerifyRecordResult" type="LeaveVerifyRecord">
+		<result column="id" property="id" jdbcType="DECIMAL" />
+		<result column="leave_id" property="leave_id" jdbcType="DECIMAL" />
+		<result column="leave_vstate" property="leave_vstate" jdbcType="DECIMAL" />
+		<result column="content" property="content" jdbcType="VARCHAR" />
+		<result column="creator_id" property="creator_id" jdbcType="DECIMAL" />
+		<result column="create_time" property="create_time"  />
+    </resultMap>
+
+	<sql id="sf-leaveVerifyRecord">
+		<where>
+			<if test="id != null">
+				and a.id = #{id}
+			</if>
+			<if test="leave_id != null">
+				and a.leave_id = #{leave_id}
+			</if>
+			<if test="leave_vstate != null">
+				and a.leave_vstate = #{leave_vstate}
+			</if>
+			<if test="content != null">
+				and a.content = #{content}
+			</if>
+			<if test="creator_id != null">
+				and a.creator_id = #{creator_id}
+			</if>
+			<if test="create_time != null">
+				and a.create_time = #{create_time}
+			</if>
+			<if test="map.keyword != null">
+				and a.keyword like concat('%',#{map.keyword},'%')
+			</if>
+			<if test="map.ids != null">
+				and a.id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+		<if test="map.sort != null">
+			order by a.id desc
+		</if>
+	</sql>
+
+	<select id="selectLeaveVerifyRecord" resultType="LeaveVerifyRecord" parameterType="LeaveVerifyRecord">
+		select a.* from leave_verify_record a
+		<include refid="sf-leaveVerifyRecord" />
+	</select>
+	
+	<select id="selectLeaveVerifyRecordList" resultType="LeaveVerifyRecord" parameterType="LeaveVerifyRecord">
+		select a.* from leave_verify_record a
+		<include refid="sf-leaveVerifyRecord" />
+	</select>
+	
+	<select id="selectLeaveVerifyRecordCount" resultType="int" parameterType="LeaveVerifyRecord">
+		select count(1) from leave_verify_record a
+		<include refid="sf-leaveVerifyRecord" />
+	</select>
+	
+	<select id="selectLeaveVerifyRecordPageList" resultType="LeaveVerifyRecord" parameterType="LeaveVerifyRecord">
+		select a.* from leave_verify_record a
+		<include refid="sf-leaveVerifyRecord" />
+		limit #{map.startIndex},#{map.pageSize}
+	</select>
+	
+	<select id="selectLeaveVerifyRecordSort" resultType="int" parameterType="LeaveVerifyRecord">
+		select max(a.id) from leave_verify_record a
+		<include refid="sf-leaveVerifyRecord" />
+	</select>
+
+	<insert id="insertLeaveVerifyRecord" parameterType="LeaveVerifyRecord" useGeneratedKeys="true"
+		keyProperty="id"> 
+		<![CDATA[insert into leave_verify_record (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">id,</if> 
+			<if test="leave_id != null">leave_id,</if> 
+			<if test="leave_vstate != null">leave_vstate,</if> 
+			<if test="content != null">content,</if> 
+			<if test="creator_id != null">creator_id,</if> 
+			<if test="create_time != null">create_time,</if> 
+		</trim>
+		<![CDATA[) values (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">#{id},</if> 
+			<if test="leave_id != null">#{leave_id},</if> 
+			<if test="leave_vstate != null">#{leave_vstate},</if> 
+			<if test="content != null">#{content},</if> 
+			<if test="creator_id != null">#{creator_id},</if> 
+			<if test="create_time != null">#{create_time},</if> 
+		</trim>
+		<![CDATA[)]]>
+	</insert>
+
+	<update id="updateLeaveVerifyRecord" parameterType="LeaveVerifyRecord">
+		update leave_verify_record
+		<set>
+			<if test="leave_id != null">leave_id=#{leave_id},</if>
+			<if test="leave_vstate != null">leave_vstate=#{leave_vstate},</if>
+			<if test="content != null">content=#{content},</if>
+			<if test="creator_id != null">creator_id=#{creator_id},</if>
+			<if test="create_time != null">create_time=#{create_time},</if>
+		</set>
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</update>
+	
+	<delete id="deleteLeaveVerifyRecord" parameterType="LeaveVerifyRecord">
+		delete from leave_verify_record 
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</delete>
+</mapper>

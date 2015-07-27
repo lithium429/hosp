@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="entity.HandlingProcess">  
+	<resultMap id="handlingProcessResult" type="HandlingProcess">
+		<result column="id" property="id" jdbcType="DECIMAL" />
+		<result column="code" property="code" jdbcType="VARCHAR" />
+		<result column="title" property="title" jdbcType="VARCHAR" />
+		<result column="content" property="content" jdbcType="VARCHAR" />
+		<result column="user_id" property="user_id" jdbcType="DECIMAL" />
+		<result column="close_date" property="close_date"  />
+		<result column="end_date" property="end_date"  />
+		<result column="state" property="state" jdbcType="DECIMAL" />
+		<result column="creator_id" property="creator_id" jdbcType="DECIMAL" />
+		<result column="create_time" property="create_time"  />
+    </resultMap>
+    
+    <resultMap id="handlingProcessResult_help" type="HandlingProcess" extends="handlingProcessResult" >
+		<result column="user_name" property="user_name" jdbcType="VARCHAR" />
+		<result column="creator_name" property="creator_name" jdbcType="VARCHAR" />
+		<collection property="records" resultMap="handlingProcessRecordResult" />
+    </resultMap>
+    
+    <resultMap id="handlingProcessRecordResult" type="HandlingProcessRecord">
+		<result column="hpr_id" property="id" jdbcType="DECIMAL" />
+		<result column="hpr_user_id" property="user_id" jdbcType="DECIMAL" />
+		<result column="hpr_user_name" property="user_name" jdbcType="VARCHAR" />
+		<result column="hpr_content" property="content" jdbcType="VARCHAR" />
+		<result column="hpr_create_time" property="create_time"  />
+    </resultMap>
+
+	<sql id="sf-handlingProcess">
+		<where>
+			<if test="id != null">
+				and a.id = #{id}
+			</if>
+			<if test="code != null">
+				and a.code = #{code}
+			</if>
+			<if test="title != null">
+				and a.title = #{title}
+			</if>
+			<if test="content != null">
+				and a.content = #{content}
+			</if>
+			<if test="user_id != null">
+				and a.user_id = #{user_id}
+			</if>
+			<if test="close_date != null">
+				and a.close_date = #{close_date}
+			</if>
+			<if test="end_date != null">
+				and a.end_date = #{end_date}
+			</if>
+			<if test="state != null">
+				and a.state = #{state}
+			</if>
+			<if test="creator_id != null">
+				and a.creator_id = #{creator_id}
+			</if>
+			<if test="create_time != null">
+				and a.create_time = #{create_time}
+			</if>
+			<if test="map.keyword != null">
+				and (a.code like concat('%',#{map.keyword},'%') or a.title like concat('%',#{map.keyword},'%'))
+			</if>
+			<if test="map.user_name != null">
+				and b.name like concat('%',#{map.user_name},'%')
+			</if>
+			<if test="map.creator_name != null">
+				and c.name like concat('%',#{map.creator_name},'%')
+			</if>
+			<if test="map.end_date_min != null">
+				and a.end_date >= #{map.end_date_min}
+			</if>
+			<if test="map.end_date_max != null">
+				and #{map.end_date_max} >= a.end_date
+			</if>
+			<if test="map.create_time_min != null">
+				and a.create_time >= #{map.create_time_min}
+			</if>
+			<if test="map.create_time_max != null">
+				and #{map.create_time_max} >= a.create_time
+			</if>
+			<if test="map.user_id_all != null">
+				and d.user_id = #{map.user_id_all}
+			</if>
+			<if test="map.n_state != null">
+				and a.state != #{map.n_state}
+			</if>
+			<if test="map.ids != null">
+				and a.id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</sql>
+	
+	<sql id="sf-handlingProcess-order">
+		<include refid="sf-handlingProcess" />
+		<if test="map.sort != null">
+			order by a.id desc
+		</if>
+	</sql>
+
+	<select id="selectHandlingProcess" resultMap="handlingProcessResult_help" parameterType="HandlingProcess">
+		select a.*,b.real_name as user_name,c.real_name as creator_name,d.id as hpr_id,d.user_id as hpr_user_id,
+		e.real_name as hpr_user_name,d.content as hpr_content,d.create_time as hpr_create_time
+	    from handling_process a left join user b on a.user_id = b.id left join user c on a.creator_id = c.id 
+	    left join handling_process_record d on a.id=d.handling_id left join user e on d.user_id = e.id
+		<include refid="sf-handlingProcess" />
+	</select>
+	
+	<select id="selectHandlingProcessList" resultType="HandlingProcess" parameterType="HandlingProcess">
+		select a.* from handling_process a
+		<include refid="sf-handlingProcess-order" />
+	</select>
+	
+	<select id="selectHandlingProcessCount" resultType="int" parameterType="HandlingProcess">
+		select count(1) from (select count(1) from handling_process a left join user b on a.user_id = b.id 
+		left join user c on a.creator_id = c.id left join handling_process_record d on a.id=d.handling_id 
+		<include refid="sf-handlingProcess" />
+		group by a.id) as t
+	</select>
+	
+	<select id="selectHandlingProcessPageList" resultType="HandlingProcess" parameterType="HandlingProcess">
+		select t.* from (select a.*,b.real_name as user_name,c.real_name as creator_name from handling_process a 
+		left join user b on a.user_id = b.id left join user c on a.creator_id = c.id
+		left join handling_process_record d on a.id=d.handling_id 
+		<include refid="sf-handlingProcess" />
+		group by a.id) as t order by t.id desc
+		limit #{map.startIndex},#{map.pageSize}
+	</select>
+	
+	<select id="selectHandlingProcessCode" resultType="String" parameterType="HandlingProcess">
+		select max(a.code) from handling_process a
+		<include refid="sf-handlingProcess" />
+	</select>
+	
+	<select id="selectHandlingProcessSort" resultType="int" parameterType="HandlingProcess">
+		select max(a.id) from handling_process a
+		<include refid="sf-handlingProcess" />
+	</select>
+
+	<insert id="insertHandlingProcess" parameterType="HandlingProcess" useGeneratedKeys="true"
+		keyProperty="id"> 
+		<![CDATA[insert into handling_process (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">id,</if> 
+			<if test="code != null">code,</if> 
+			<if test="title != null">title,</if> 
+			<if test="content != null">content,</if> 
+			<if test="user_id != null">user_id,</if> 
+			<if test="close_date != null">close_date,</if> 
+			<if test="end_date != null">end_date,</if> 
+			<if test="state != null">state,</if> 
+			<if test="creator_id != null">creator_id,</if> 
+			<if test="create_time != null">create_time,</if> 
+		</trim>
+		<![CDATA[) values (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">#{id},</if> 
+			<if test="code != null">#{code},</if> 
+			<if test="title != null">#{title},</if> 
+			<if test="content != null">#{content},</if> 
+			<if test="user_id != null">#{user_id},</if> 
+			<if test="close_date != null">#{close_date},</if> 
+			<if test="end_date != null">#{end_date},</if> 
+			<if test="state != null">#{state},</if> 
+			<if test="creator_id != null">#{creator_id},</if> 
+			<if test="create_time != null">#{create_time},</if> 
+		</trim>
+		<![CDATA[)]]>
+	</insert>
+
+	<update id="updateHandlingProcess" parameterType="HandlingProcess">
+		update handling_process
+		<set>
+			<if test="code != null">code=#{code},</if>
+			<if test="title != null">title=#{title},</if>
+			<if test="content != null">content=#{content},</if>
+			<if test="user_id != null">user_id=#{user_id},</if>
+			<if test="close_date != null">close_date=#{close_date},</if>
+			<if test="end_date != null">end_date=#{end_date},</if>
+			<if test="state != null">state=#{state},</if>
+			<if test="creator_id != null">creator_id=#{creator_id},</if>
+			<if test="create_time != null">create_time=#{create_time},</if>
+		</set>
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</update>
+	
+	<delete id="deleteHandlingProcess" parameterType="HandlingProcess">
+		delete from handling_process 
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</delete>
+</mapper>

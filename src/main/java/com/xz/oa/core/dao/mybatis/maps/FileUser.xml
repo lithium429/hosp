@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="entity.FileUser">  
+	<resultMap id="fileUserResult" type="FileUser">
+		<result column="file_user_id" property="id" jdbcType="DECIMAL" />
+		<result column="file_id" property="file_id" jdbcType="DECIMAL" />
+		<result column="user_id" property="user_id" jdbcType="DECIMAL" />
+		<result column="user_name" property="user_name" jdbcType="DECIMAL" />
+    </resultMap>
+
+	<sql id="sf-fileUser">
+		<where>
+			<if test="id != null">
+				and a.id = #{id}
+			</if>
+			<if test="file_id != null">
+				and a.file_id = #{file_id}
+			</if>
+			<if test="user_id != null">
+				and a.user_id = #{user_id}
+			</if>
+			<if test="map.keyword != null">
+				and a.keyword like concat('%',#{map.keyword},'%')
+			</if>
+			<if test="map.ids != null">
+				and a.id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+		<if test="map.sort != null">
+			order by a.id desc
+		</if>
+	</sql>
+
+	<select id="selectFileUser" resultType="FileUser" parameterType="FileUser">
+		select a.* from file_user a
+		<include refid="sf-fileUser" />
+	</select>
+	
+	<select id="selectFileUserList" resultType="FileUser" parameterType="FileUser">
+		select a.* from file_user a
+		<include refid="sf-fileUser" />
+	</select>
+	
+	<select id="selectFileUserCount" resultType="int" parameterType="FileUser">
+		select count(1) from file_user a
+		<include refid="sf-fileUser" />
+	</select>
+	
+	<select id="selectFileUserPageList" resultType="FileUser" parameterType="FileUser">
+		select a.* from file_user a
+		<include refid="sf-fileUser" />
+		limit #{map.startIndex},#{map.pageSize}
+	</select>
+
+	<insert id="insertFileUser" parameterType="FileUser" useGeneratedKeys="true"
+		keyProperty="id"> 
+		<![CDATA[insert into file_user (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">id,</if> 
+			<if test="file_id != null">file_id,</if> 
+			<if test="user_id != null">user_id,</if> 
+		</trim>
+		<![CDATA[) values (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">#{id},</if> 
+			<if test="file_id != null">#{file_id},</if> 
+			<if test="user_id != null">#{user_id},</if> 
+		</trim>
+		<![CDATA[)]]>
+	</insert>
+
+	<update id="updateFileUser" parameterType="FileUser">
+		update file_user
+		<set>
+			<if test="file_id != null">file_id=#{file_id},</if>
+			<if test="user_id != null">user_id=#{user_id},</if>
+		</set>
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</update>
+	
+	<delete id="deleteFileUser" parameterType="FileUser">
+		delete from file_user 
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="file_id != null">
+				and file_id = #{file_id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+			<if test="map.file_ids != null">
+				and file_id in
+				<foreach collection="map.file_ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</delete>
+</mapper>

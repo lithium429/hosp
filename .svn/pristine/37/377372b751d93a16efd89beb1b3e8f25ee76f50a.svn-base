@@ -1,0 +1,319 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="entity.Address">  
+	<resultMap id="addressResult" type="Address">
+		<result column="id" property="id" jdbcType="DECIMAL" />
+		<result column="name" property="name" jdbcType="VARCHAR" />
+		<result column="fname" property="fname" jdbcType="VARCHAR" />
+		<result column="pname" property="pname" jdbcType="VARCHAR" />
+		<result column="img_url" property="img_url" jdbcType="VARCHAR" />
+		<result column="dept_id" property="dept_id" jdbcType="DECIMAL" />
+		<result column="group_id" property="group_id" jdbcType="DECIMAL" />
+		<result column="post" property="post" jdbcType="VARCHAR" />
+		<result column="sex" property="sex" jdbcType="DECIMAL" />
+		<result column="email" property="email" jdbcType="VARCHAR" />
+		<result column="mobile" property="mobile" jdbcType="VARCHAR" />
+		<result column="qq" property="qq" jdbcType="VARCHAR" />
+		<result column="company" property="company" jdbcType="VARCHAR" />
+		<result column="address" property="address" jdbcType="VARCHAR" />
+		<result column="remark" property="remark" jdbcType="VARCHAR" />
+		<result column="type" property="type" jdbcType="DECIMAL" />
+		<result column="is_share" property="is_share" jdbcType="VARCHAR" />
+		<result column="creator_id" property="creator_id" jdbcType="DECIMAL" />
+		<result column="create_time" property="create_time" jdbcType="DATE" />
+		<result column="user_id" property="user_id" jdbcType="DECIMAL" />
+    </resultMap>
+    
+    <resultMap id="addressResult_user_only" type="Address" extends="addressResult">
+		<collection property="addressUsers" resultMap="addressUserResult" />
+    </resultMap>
+    
+     <resultMap id="addressResult_user" type="Address" extends="addressResult">
+		<result column="group_name" property="group_name" jdbcType="VARCHAR" />
+		<result column="dept_name" property="dept_name" jdbcType="VARCHAR" />
+		<result column="creator_name" property="creator_name" jdbcType="VARCHAR" />
+		<collection property="addressUsers" resultMap="addressUserResult" />
+    </resultMap>
+    
+    <resultMap id="addressHelpResult" type="AddressHelp" >
+		<result column="fname_help" property="fname" jdbcType="VARCHAR" />
+		<collection property="addresss" resultMap="addressResult_user_only" />
+    </resultMap>
+    
+    <resultMap id="addressUserResult" type="AddressUser"> 
+		<result column="addressUserid" property="id" jdbcType="DECIMAL" />
+    	<result column="address_id" property="address_id" jdbcType="DECIMAL" />
+		<result column="user_name_a" property="user_name" jdbcType="VARCHAR" />
+		<result column="user_id_a" property="user_id" jdbcType="DECIMAL" />
+    </resultMap>
+
+	<sql id="sf-address">
+		<where>
+			<if test="id != null">
+				and a.id = #{id}
+			</if>
+			<if test="name != null">
+				and a.name = #{name}
+			</if>
+			<if test="fname != null">
+				and a.fname = #{fname}
+			</if>
+			<if test="pname != null">
+				and a.pname = #{pname}
+			</if>
+			<if test="img_url != null">
+				and a.img_url = #{img_url}
+			</if>
+			<!-- <if test="dept_id != null">
+				and g.dept_id = #{dept_id}
+			</if> -->
+			<if test="group_id != null">
+				and a.group_id = #{group_id}
+			</if>
+			<if test="post != null">
+				and a.post = #{post}
+			</if>
+			<if test="sex != null">
+				and a.sex = #{sex}
+			</if>
+			<if test="user_id != null">
+				and a.user_id = #{user_id}
+			</if>
+			<if test="email != null">
+				and a.email = #{email}
+			</if>
+			<if test="mobile != null">
+				and a.mobile = #{mobile}
+			</if>
+			<if test="qq != null">
+				and a.qq = #{qq}
+			</if>
+			<if test="company != null">
+				and a.company = #{company}
+			</if>
+			<if test="address != null">
+				and a.address = #{address}
+			</if>
+			<if test="remark != null">
+				and a.remark = #{remark}
+			</if>
+			<if test="type != null">
+				and a.type = #{type}
+			</if>
+			<if test="is_share != null">
+				and a.is_share = #{is_share}
+			</if>
+			<if test="creator_id != null">
+				and a.creator_id = #{creator_id}
+			</if>
+			<if test="create_time != null">
+				and a.create_time = #{create_time}
+			</if>
+			<if test="map.keyword != null">
+				and (a.name like concat('%',#{map.keyword},'%') or a.pname like concat('%',#{map.keyword},'%'))
+			</if>
+			<if test="map.group_id_null != null">
+				and a.group_id is null
+			</if>
+			<if test="map.ids != null">
+				and a.id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</sql>
+	
+	
+
+	<sql id="sf-address-count">
+		<include refid="sf-address" />
+		<if test="dept_id != null">
+				and g.dept_id = #{dept_id}
+			</if>
+		<if test="map.user_id_share != null">
+			and (a.creator_id=#{map.creator_id} or b.user_id = #{map.user_id_share} )
+		</if>
+	</sql>
+
+	<sql id="sf-address—order">
+		<include refid="sf-address" />
+		<if test="dept_id != null">
+				and g.dept_id = #{dept_id}
+			</if>
+		<if test="map.user_id_share != null">
+			and (a.creator_id=#{map.creator_id} or b.user_id = #{map.user_id_share} )
+		</if>
+		<if test="map.sort != null">
+			order by a.pname
+		</if>
+	</sql>
+
+	<select id="selectAddress" resultMap="addressResult_user" parameterType="Address">
+		select a.id,a.name,a.fname,a.pname,a.img_url,a.dept_id,
+		a.group_id,a.post,a.sex,a.qq,a.company,a.address,a.remark,
+		a.type,a.creator_id,a.user_id,a.is_share,
+		case when a.user_id is null then a.dept_id else g.dept_id end as dept_id,
+		case when a.user_id is null then a.email else g.email end as email,
+		case when a.user_id is null then a.mobile else g.mobile end as mobile,
+		case when a.user_id is null then a.name else g.real_name end as name,
+		case when a.user_id is null then a.fname else g.fname end as fname,
+		case when a.user_id is null then a.pname else g.pname end as pname,
+		b.id as addressUserid,b.user_id as user_id_a,
+		b.address_id,c.real_name as user_name_a,d.name as dept_name,e.name as group_name,g.real_name as user_name, 
+		f.name as creator_name from address a left join address_user b on a.id=b.address_id left join user c on b.user_id=c.id
+		left join department d on a.dept_id=d.id left join address_group e on a.group_id=e.id left join user f on a.creator_id=f.id 
+		left join user g on a.user_id=g.id
+		<include refid="sf-address" />
+	</select>
+	
+	<select id="selectAddressList" resultType="Address" parameterType="Address">
+		select a.* from address a
+		<include refid="sf-address—order" />
+	</select>
+	
+	<select id="selectAddressListHelp" resultMap="addressHelpResult" parameterType="Address">
+		select b.fname as fname_help,
+		a.id,a.name,a.fname,a.pname,a.img_url,
+		a.group_id,a.post,a.sex,a.qq,a.company,a.address,a.remark,
+		a.type,a.creator_id,a.user_id,a.is_share,
+		case when a.user_id is null then a.dept_id else g.dept_id end as dept_id,
+		case when a.user_id is null then a.email else g.email end as email,
+		case when a.user_id is null then a.mobile else g.mobile end as mobile,
+		case when a.user_id is null then a.name else g.real_name end as name,
+		case when a.user_id is null then a.fname else g.fname end as fname,
+		case when a.user_id is null then a.pname else g.pname end as pname,
+		b.id as addressUserid,b.user_id as user_id_a,b.address_id,c.real_name as user_name_a
+		 from (select a.fname from address a <include refid="sf-address" />
+		group by a.fname) b left join address a on a.fname=b.fname
+		left join address_user b on a.id=b.address_id left join user c on b.user_id=c.id
+		left join user g on a.user_id=g.id
+		<include refid="sf-address—order" />
+	</select>
+	
+	<select id="selectAddressCount" resultType="int" parameterType="Address">
+		select count(1) from(select count(1) from address a left join address_user b on a.id=b.address_id
+		left join user g on a.user_id=g.id
+		<include refid="sf-address-count" />
+		group by a.id ) as t
+	</select>
+	
+	<select id="selectAddressPageList" resultType="Address" parameterType="Address">
+		select a.* from address a
+		<include refid="sf-address—order" />
+		limit #{map.startIndex},#{map.pageSize}
+	</select>
+	
+	<select id="selectAddressSort" resultType="int" parameterType="Address">
+		select max(a.id) from address a
+		<include refid="sf-address" />
+	</select>
+
+	<insert id="insertAddress" parameterType="Address" useGeneratedKeys="true"
+		keyProperty="id"> 
+		<![CDATA[insert into address (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">id,</if> 
+			<if test="name != null">name,</if> 
+			<if test="pname != null">pname,</if> 
+			<if test="fname != null">fname,</if> 
+			<if test="img_url != null">img_url,</if> 
+			<if test="dept_id != null">dept_id,</if> 
+			<if test="group_id != null">group_id,</if> 
+			<if test="post != null">post,</if> 
+			<if test="sex != null">sex,</if> 
+			<if test="email != null">email,</if> 
+			<if test="mobile != null">mobile,</if> 
+			<if test="qq != null">qq,</if> 
+			<if test="company != null">company,</if> 
+			<if test="address != null">address,</if> 
+			<if test="remark != null">remark,</if> 
+			<if test="type != null">type,</if> 
+			<if test="is_share != null">is_share,</if> 
+			<if test="creator_id != null">creator_id,</if> 
+			<if test="create_time != null">create_time,</if> 
+			<if test="user_id != null">user_id,</if> 
+		</trim>
+		<![CDATA[) values (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">#{id},</if> 
+			<if test="name != null">#{name},</if> 
+			<if test="pname != null">#{pname},</if> 
+			<if test="fname != null">#{fname},</if> 
+			<if test="img_url != null">#{img_url},</if> 
+			<if test="dept_id != null">#{dept_id},</if> 
+			<if test="group_id != null">#{group_id},</if> 
+			<if test="post != null">#{post},</if> 
+			<if test="sex != null">#{sex},</if> 
+			<if test="email != null">#{email},</if> 
+			<if test="mobile != null">#{mobile},</if> 
+			<if test="qq != null">#{qq},</if> 
+			<if test="company != null">#{company},</if> 
+			<if test="address != null">#{address},</if> 
+			<if test="remark != null">#{remark},</if> 
+			<if test="type != null">#{type},</if> 
+			<if test="is_share != null">#{is_share},</if> 
+			<if test="creator_id != null">#{creator_id},</if> 
+			<if test="create_time != null">#{create_time},</if> 
+			<if test="user_id != null">#{user_id},</if> 
+		</trim>
+		<![CDATA[)]]>
+	</insert>
+
+	<update id="updateAddress" parameterType="Address">
+		update address
+		<set>
+			<if test="name != null">name=#{name},</if>
+			<if test="pname != null">pname=#{pname},</if>
+			<if test="fname != null">fname=#{fname},</if>
+			<if test="img_url != null">img_url=#{img_url},</if>
+			<if test="dept_id != null">dept_id=#{dept_id},</if>
+			<if test="group_id != null">group_id=#{group_id},</if>
+			<if test="map.group_id_null != null">group_id=null,</if>
+			<if test="post != null">post=#{post},</if>
+			<if test="sex != null">sex=#{sex},</if>
+			<if test="email != null">email=#{email},</if>
+			<if test="mobile != null">mobile=#{mobile},</if>
+			<if test="qq != null">qq=#{qq},</if>
+			<if test="company != null">company=#{company},</if>
+			<if test="address != null">address=#{address},</if>
+			<if test="remark != null">remark=#{remark},</if>
+			<if test="type != null">type=#{type},</if>
+			<if test="is_share != null">is_share=#{is_share},</if>
+			<if test="creator_id != null">creator_id=#{creator_id},</if>
+			<if test="create_time != null">create_time=#{create_time},</if>
+			<if test="user_id != null">user_id=#{user_id},</if>
+		</set>
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</update>
+	
+	<delete id="deleteAddress" parameterType="Address">
+		delete from address 
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</delete>
+</mapper>

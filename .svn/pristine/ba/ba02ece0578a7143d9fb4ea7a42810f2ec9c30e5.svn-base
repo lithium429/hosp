@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="entity.HandlingProcessRecord">  
+	<resultMap id="handlingProcessRecordResult" type="HandlingProcessRecord">
+		<result column="id" property="id" jdbcType="DECIMAL" />
+		<result column="handling_id" property="handling_id" jdbcType="DECIMAL" />
+		<result column="user_id" property="user_id" jdbcType="DECIMAL" />
+		<result column="content" property="content" jdbcType="VARCHAR" />
+		<result column="create_time" property="create_time"  />
+    </resultMap>
+
+	<sql id="sf-handlingProcessRecord">
+		<where>
+			<if test="id != null">
+				and a.id = #{id}
+			</if>
+			<if test="handling_id != null">
+				and a.handling_id = #{handling_id}
+			</if>
+			<if test="user_id != null">
+				and a.user_id = #{user_id}
+			</if>
+			<if test="content != null">
+				and a.content = #{content}
+			</if>
+			<if test="create_time != null">
+				and a.create_time = #{create_time}
+			</if>
+			<if test="map.keyword != null">
+				and a.keyword like concat('%',#{map.keyword},'%')
+			</if>
+			<if test="map.ids != null">
+				and a.id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+		<if test="map.sort != null">
+			order by a.id desc
+		</if>
+	</sql>
+
+	<select id="selectHandlingProcessRecord" resultType="HandlingProcessRecord" parameterType="HandlingProcessRecord">
+		select a.* from handling_process_record a
+		<include refid="sf-handlingProcessRecord" />
+	</select>
+	
+	<select id="selectHandlingProcessRecordList" resultType="HandlingProcessRecord" parameterType="HandlingProcessRecord">
+		select a.* from handling_process_record a
+		<include refid="sf-handlingProcessRecord" />
+	</select>
+	
+	<select id="selectHandlingProcessRecordCount" resultType="int" parameterType="HandlingProcessRecord">
+		select count(1) from handling_process_record a
+		<include refid="sf-handlingProcessRecord" />
+	</select>
+	
+	<select id="selectHandlingProcessRecordPageList" resultType="HandlingProcessRecord" parameterType="HandlingProcessRecord">
+		select a.* from handling_process_record a
+		<include refid="sf-handlingProcessRecord" />
+		limit #{map.startIndex},#{map.pageSize}
+	</select>
+	
+	<select id="selectHandlingProcessRecordSort" resultType="int" parameterType="HandlingProcessRecord">
+		select max(a.id) from handling_process_record a
+		<include refid="sf-handlingProcessRecord" />
+	</select>
+
+	<insert id="insertHandlingProcessRecord" parameterType="HandlingProcessRecord" useGeneratedKeys="true"
+		keyProperty="id"> 
+		<![CDATA[insert into handling_process_record (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">id,</if> 
+			<if test="handling_id != null">handling_id,</if> 
+			<if test="user_id != null">user_id,</if> 
+			<if test="content != null">content,</if> 
+			<if test="create_time != null">create_time,</if> 
+		</trim>
+		<![CDATA[) values (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">#{id},</if> 
+			<if test="handling_id != null">#{handling_id},</if> 
+			<if test="user_id != null">#{user_id},</if> 
+			<if test="content != null">#{content},</if> 
+			<if test="create_time != null">#{create_time},</if> 
+		</trim>
+		<![CDATA[)]]>
+	</insert>
+
+	<update id="updateHandlingProcessRecord" parameterType="HandlingProcessRecord">
+		update handling_process_record
+		<set>
+			<if test="handling_id != null">handling_id=#{handling_id},</if>
+			<if test="user_id != null">user_id=#{user_id},</if>
+			<if test="content != null">content=#{content},</if>
+			<if test="create_time != null">create_time=#{create_time},</if>
+		</set>
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</update>
+	
+	<delete id="deleteHandlingProcessRecord" parameterType="HandlingProcessRecord">
+		delete from handling_process_record 
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</delete>
+</mapper>

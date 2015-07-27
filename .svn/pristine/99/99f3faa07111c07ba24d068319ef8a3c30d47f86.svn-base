@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="entity.AnnouncementDept">  
+	
+
+	<sql id="sf-announcementDept">
+		<where>
+			<if test="id != null">
+				and a.id = #{id}
+			</if>
+			<if test="announcement_id != null">
+				and a.announcement_id = #{announcement_id}
+			</if>
+			<if test="dept_id != null">
+				and a.dept_id = #{dept_id}
+			</if>
+			<if test="map.keyword != null">
+				and a.keyword like concat('%',#{map.keyword},'%')
+			</if>
+			<if test="map.ids != null">
+				and a.id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+		<if test="map.sort != null">
+			order by a.id desc
+		</if>
+	</sql>
+
+	<select id="selectAnnouncementDept" resultType="AnnouncementDept" parameterType="AnnouncementDept">
+		select a.* from announcement_dept a
+		<include refid="sf-announcementDept" />
+	</select>
+	
+	<select id="selectAnnouncementDeptList" resultType="AnnouncementDept" parameterType="AnnouncementDept">
+		select a.* from announcement_dept a
+		<include refid="sf-announcementDept" />
+	</select>
+	
+	<select id="selectAnnouncementDeptCount" resultType="int" parameterType="AnnouncementDept">
+		select count(1) from announcement_dept a
+		<include refid="sf-announcementDept" />
+	</select>
+	
+	<select id="selectAnnouncementDeptPageList" resultType="AnnouncementDept" parameterType="AnnouncementDept">
+		select a.* from announcement_dept a
+		<include refid="sf-announcementDept" />
+		limit #{map.startIndex},#{map.pageSize}
+	</select>
+	
+	<select id="selectAnnouncementDeptSort" resultType="int" parameterType="AnnouncementDept">
+		select max(a.id) from announcement_dept a
+		<include refid="sf-announcementDept" />
+	</select>
+
+	<insert id="insertAnnouncementDept" parameterType="AnnouncementDept" useGeneratedKeys="true"
+		keyProperty="id"> 
+		<![CDATA[insert into announcement_dept (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">id,</if> 
+			<if test="announcement_id != null">announcement_id,</if> 
+			<if test="dept_id != null">dept_id,</if> 
+		</trim>
+		<![CDATA[) values (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">#{id},</if> 
+			<if test="announcement_id != null">#{announcement_id},</if> 
+			<if test="dept_id != null">#{dept_id},</if> 
+		</trim>
+		<![CDATA[)]]>
+	</insert>
+
+	<update id="updateAnnouncementDept" parameterType="AnnouncementDept">
+		update announcement_dept
+		<set>
+			<if test="announcement_id != null">announcement_id=#{announcement_id},</if>
+			<if test="dept_id != null">dept_id=#{dept_id},</if>
+		</set>
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</update>
+	
+	<delete id="deleteAnnouncementDept" parameterType="AnnouncementDept">
+		delete from announcement_dept 
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="announcement_id != null">
+				and announcement_id = #{announcement_id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</delete>
+</mapper>

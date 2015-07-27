@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="entity.EmailContent">  
+	<resultMap id="emailContentResult" type="EmailContent">
+		<result column="id" property="id" jdbcType="DECIMAL" />
+		<result column="content" property="content" jdbcType="VARCHAR" />
+		<result column="email_id" property="email_id" jdbcType="DECIMAL" />
+    </resultMap>
+
+	<sql id="sf-emailContent">
+		<where>
+			<if test="id != null">
+				and a.id = #{id}
+			</if>
+			<if test="content != null">
+				and a.content = #{content}
+			</if>
+			<if test="email_id != null">
+				and a.email_id = #{email_id}
+			</if>
+			<if test="map.keyword != null">
+				and a.keyword like concat('%',#{map.keyword},'%')
+			</if>
+			<if test="map.ids != null">
+				and a.id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+		<if test="map.sort != null">
+			order by a.id desc
+		</if>
+	</sql>
+
+	<select id="selectEmailContent" resultType="EmailContent" parameterType="EmailContent">
+		select a.* from email_content a
+		<include refid="sf-emailContent" />
+	</select>
+	
+	<select id="selectEmailContentList" resultType="EmailContent" parameterType="EmailContent">
+		select a.* from email_content a
+		<include refid="sf-emailContent" />
+	</select>
+	
+	<select id="selectEmailContentCount" resultType="int" parameterType="EmailContent">
+		select count(1) from email_content a
+		<include refid="sf-emailContent" />
+	</select>
+	
+	<select id="selectEmailContentPageList" resultType="EmailContent" parameterType="EmailContent">
+		select a.* from email_content a
+		<include refid="sf-emailContent" />
+		limit #{map.startIndex},#{map.pageSize}
+	</select>
+	
+	<select id="selectEmailContentSort" resultType="int" parameterType="EmailContent">
+		select max(a.id) from email_content a
+		<include refid="sf-emailContent" />
+	</select>
+
+	<insert id="insertEmailContent" parameterType="EmailContent" useGeneratedKeys="true"
+		keyProperty="id"> 
+		<![CDATA[insert into email_content (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">id,</if> 
+			<if test="content != null">content,</if> 
+			<if test="email_id != null">email_id,</if> 
+		</trim>
+		<![CDATA[) values (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">#{id},</if> 
+			<if test="content != null">#{content},</if> 
+			<if test="email_id != null">#{email_id},</if> 
+		</trim>
+		<![CDATA[)]]>
+	</insert>
+
+	<update id="updateEmailContent" parameterType="EmailContent">
+		update email_content
+		<set>
+			<if test="content != null">content=#{content},</if>
+			<if test="email_id != null">email_id=#{email_id},</if>
+		</set>
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</update>
+	
+	<delete id="deleteEmailContent" parameterType="EmailContent">
+		delete from email_content 
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</delete>
+</mapper>

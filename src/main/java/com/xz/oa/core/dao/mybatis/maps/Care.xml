@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="entity.Care">  
+	<resultMap id="careResult" type="Care">
+		<result column="id" property="id" jdbcType="DECIMAL" />
+		<result column="title" property="title" jdbcType="VARCHAR" />
+		<result column="browse_count" property="browse_count" jdbcType="DECIMAL" />
+		<result column="source" property="source" jdbcType="VARCHAR" />
+		<result column="author" property="author" jdbcType="VARCHAR" />
+		<result column="content" property="content" jdbcType="VARCHAR" />
+		<result column="creator_id" property="creator_id" jdbcType="DECIMAL" />
+		<result column="create_time" property="create_time"  />
+		<result column="type_id" property="type_id" jdbcType="DECIMAL" />
+    </resultMap>
+    
+    <resultMap id="careResult_file" type="Care" extends="careResult">
+		<result column="type_name" property="type_name" jdbcType="VARCHAR" />
+		<result column="creator_name" property="creator_name" jdbcType="VARCHAR" />
+		<collection property="files" resultMap="entity.CareFile.careFileResult" />
+    </resultMap>
+
+	<sql id="sf-care">
+		<where>
+			<if test="id != null">
+				and a.id = #{id}
+			</if>
+			<if test="title != null">
+				and a.title = #{title}
+			</if>
+			<if test="browse_count != null">
+				and a.browse_count = #{browse_count}
+			</if>
+			<if test="source != null">
+				and a.source = #{source}
+			</if>
+			<if test="author != null">
+				and a.author = #{author}
+			</if>
+			<if test="content != null">
+				and a.content = #{content}
+			</if>
+			<if test="creator_id != null">
+				and a.creator_id = #{creator_id}
+			</if>
+			<if test="create_time != null">
+				and a.create_time = #{create_time}
+			</if>
+			<if test="type_id != null">
+				and a.type_id = #{type_id}
+			</if>
+			<if test="map.keyword != null">
+				and (a.title like concat('%',#{map.keyword},'%') or a.content like concat('%',#{map.keyword},'%'))
+			</if>
+			<if test="map.create_time_min != null">
+				and a.create_time >= #{map.create_time_min}
+			</if>
+			<if test="map.create_time_max != null">
+				and #{map.create_time_max} >= a.create_time
+			</if>
+			<if test="map.title_valid != null">
+				and a.id !=#{map.id} and a.title =#{map.title_valid }
+			</if>
+			<if test="map.creator_id != null">
+				and a.creator_id = #{map.creator_id}
+			</if>
+			<if test="map.ids != null">
+				and a.id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if> 
+			<if test="map.prev != null">
+				<![CDATA[and a.id > #{map.id}]]>
+			</if>
+			<if test="map.next != null">
+				<![CDATA[and a.id < #{map.id}]]>
+			</if>
+		</where>
+		<if test="map.sort != null">
+			order by a.id desc
+		</if>
+		<if test="map.sort_asc != null">
+			order by a.id
+		</if>
+	</sql>
+
+	<select id="selectCare" resultMap="careResult_file" parameterType="Care">
+		select a.*,b.name as type_name,c.real_name as creator_name,
+		g.care_id as mf_care_id,g.type as mf_type, g.file_id as mf_file_id, 
+		case when g.type = '3' then h.url else g.url end as mf_url,
+		case when g.type = '3' then h.name else g.name end as mf_name, 
+		g.sort as mf_sort,g.id as mf_id from care a
+		left join care_type b on a.type_id=b.id
+		left join user c on a.creator_id=c.id
+		left join care_file g on a.id = g.care_id
+		left join file h on g.file_id = h.id and g.type = 3
+		<include refid="sf-care" />
+	</select>
+	
+	<select id="selectCareForPrev" resultType="Care" parameterType="Care">
+		select a.id,a.title from care a  
+		<include refid="sf-care" />
+		limit 0,1
+	</select>
+	
+	<select id="selectCareForNext" resultType="Care" parameterType="Care">
+		select a.id,a.title from care a	 
+		<include refid="sf-care" />
+		limit 0,1
+	</select>
+	
+	<select id="selectCareList" resultType="Care" parameterType="Care">
+		select a.* from care a
+		<include refid="sf-care" />
+	</select>
+	
+	<select id="selectCareListForHome" resultType="Care" parameterType="Care">
+		select a.id,a.title,a.type_id,a.create_time from care a
+		<include refid="sf-care" />
+	</select>
+	
+	<select id="selectCareCount" resultType="int" parameterType="Care">
+		select count(1) from care a
+		<include refid="sf-care" />
+	</select>
+	
+	<select id="selectCarePageList" resultType="Care" parameterType="Care">
+		select a.* from care a
+		<include refid="sf-care" />
+		limit #{map.startIndex},#{map.pageSize}
+	</select>
+	
+	<select id="selectCareSort" resultType="int" parameterType="Care">
+		select max(a.id) from care a
+		<include refid="sf-care" />
+	</select>
+
+	<insert id="insertCare" parameterType="Care" useGeneratedKeys="true"
+		keyProperty="id"> 
+		<![CDATA[insert into care (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">id,</if> 
+			<if test="title != null">title,</if> 
+			<if test="browse_count != null">browse_count,</if> 
+			<if test="source != null">source,</if> 
+			<if test="author != null">author,</if> 
+			<if test="content != null">content,</if> 
+			<if test="creator_id != null">creator_id,</if> 
+			<if test="create_time != null">create_time,</if> 
+			<if test="type_id != null">type_id,</if> 
+		</trim>
+		<![CDATA[) values (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">#{id},</if> 
+			<if test="title != null">#{title},</if> 
+			<if test="browse_count != null">#{browse_count},</if> 
+			<if test="source != null">#{source},</if> 
+			<if test="author != null">#{author},</if> 
+			<if test="content != null">#{content},</if> 
+			<if test="creator_id != null">#{creator_id},</if> 
+			<if test="create_time != null">#{create_time},</if> 
+			<if test="type_id != null">#{type_id},</if> 
+		</trim>
+		<![CDATA[)]]>
+	</insert>
+
+	<update id="updateCare" parameterType="Care">
+		update care
+		<set>
+			<if test="title != null">title=#{title},</if>
+			<if test="browse_count != null">browse_count=#{browse_count},</if>
+			<if test="map.null_browse_count != null">browse_count=null,</if>
+			<if test="source != null">source=#{source},</if>
+			<if test="author != null">author=#{author},</if>
+			<if test="content != null">content=#{content},</if>
+			<if test="creator_id != null">creator_id=#{creator_id},</if>
+			<if test="create_time != null">create_time=#{create_time},</if>
+			<if test="type_id != null">type_id=#{type_id},</if>
+		</set>
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</update>
+	
+	<delete id="deleteCare" parameterType="Care">
+		delete from care 
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</delete>
+</mapper>

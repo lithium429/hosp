@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="entity.RewardPunishment">  
+	<resultMap id="rewardPunishmentResult" type="RewardPunishment">
+		<result column="id" property="id" jdbcType="DECIMAL" />
+		<result column="type" property="type" jdbcType="DECIMAL" />
+		<result column="staff_id" property="staff_id" jdbcType="DECIMAL" />
+		<result column="item_id" property="item_id" jdbcType="DECIMAL" />
+		<result column="rp_date" property="rp_date"  />
+		<result column="unit" property="unit" jdbcType="VARCHAR" />
+		<result column="amount" property="amount" jdbcType="DECIMAL" />
+		<result column="content" property="content" jdbcType="VARCHAR" />
+		<result column="create_time" property="create_time"  />
+    </resultMap>
+    
+    <resultMap id="RewardPunishment_help" type="RewardPunishment" extends="rewardPunishmentResult">
+		<result column="name" property="name" jdbcType="VARCHAR" />
+		<result column="user_code" property="user_code" jdbcType="VARCHAR" />
+		<result column="item_name" property="item_name" jdbcType="VARCHAR" />
+		<collection property="files" resultMap="entity.RpFile.rpFileResult" />
+    </resultMap>
+
+	<sql id="sf-rewardPunishment">
+		<where>
+			<if test="id != null">
+				and a.id = #{id}
+			</if>
+			<if test="type != null">
+				and a.type = #{type}
+			</if>
+			<if test="staff_id != null">
+				and a.staff_id = #{staff_id}
+			</if>
+			<if test="item_id != null">
+				and a.item_id = #{item_id}
+			</if>
+			<if test="rp_date != null">
+				and a.rp_date = #{rp_date}
+			</if>
+			<if test="unit != null">
+				and a.unit = #{unit}
+			</if>
+			<if test="amount != null">
+				and a.amount = #{amount}
+			</if>
+			<if test="content != null">
+				and a.content = #{content}
+			</if>
+			<if test="create_time != null">
+				and a.create_time = #{create_time}
+			</if>
+			<if test="map.keyword != null">
+				and a.keyword like concat('%',#{map.keyword},'%')
+			</if>
+			<if test="map.rp_date_min != null">
+				and a.rp_date >= #{map.rp_date_min}
+			</if>
+			<if test="map.rp_date_max != null">
+				and #{map.rp_date_max} >= a.rp_date
+			</if>
+			<if test="map.unit != null">
+				and a.unit like concat('%',#{map.unit},'%')
+			</if>
+			<if test="map.name != null">
+				and b.name like concat('%',#{map.name},'%')
+			</if>
+			<if test="map.item_name != null">
+				and c.name like concat('%',#{map.item_name},'%')
+			</if>
+			<if test="map.ids != null">
+				and a.id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+			<if test="map.types != null">
+				and a.type in
+				<foreach collection="map.types" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+		<if test="map.sort != null">
+			order by a.id desc
+		</if>
+	</sql>
+
+	<select id="selectRewardPunishment" resultMap="RewardPunishment_help" parameterType="RewardPunishment">
+		select a.*,b.name,b.code as user_code,c.name as item_name,
+		g.rp_id as rpf_rp_id, g.type as rpf_type, g.file_id as rpf_file_id,g.create_time as rpf_create_time,
+		case when g.type = '3' then h.url else g.url end as rpf_url,
+		case when g.type = '3' then h.name else g.name end as rpf_name, 
+		g.sort as rpf_sort,g.id as rpf_id from reward_punishment a
+		left join staff b on a.staff_id=b.id left join rp_item c on a.item_id=c.id
+		left join rp_file g on a.id = g.rp_id left join file h on g.file_id = h.id and g.type = 3
+		<include refid="sf-rewardPunishment" />
+	</select>
+	
+	<select id="selectRewardPunishmentList" resultType="RewardPunishment" parameterType="RewardPunishment">
+		select a.* from reward_punishment a
+		<include refid="sf-rewardPunishment" />
+	</select>
+	
+	<select id="selectRewardPunishmentCount" resultType="int" parameterType="RewardPunishment">
+		select count(1) from reward_punishment a left join staff b on a.staff_id=b.id left join rp_item c on a.item_id=c.id
+		<include refid="sf-rewardPunishment" />
+	</select>
+	
+	<select id="selectRewardPunishmentPageList" resultType="RewardPunishment" parameterType="RewardPunishment">
+		select a.*,b.name,b.code as user_code,c.name as item_name from reward_punishment a 
+		left join staff b on a.staff_id=b.id left join rp_item c on a.item_id=c.id
+		<include refid="sf-rewardPunishment" />
+		limit #{map.startIndex},#{map.pageSize}
+	</select>
+	
+	<select id="selectRewardPunishmentSort" resultType="int" parameterType="RewardPunishment">
+		select max(a.id) from reward_punishment a
+		<include refid="sf-rewardPunishment" />
+	</select>
+
+	<insert id="insertRewardPunishment" parameterType="RewardPunishment" useGeneratedKeys="true"
+		keyProperty="id"> 
+		<![CDATA[insert into reward_punishment (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">id,</if> 
+			<if test="type != null">type,</if> 
+			<if test="staff_id != null">staff_id,</if> 
+			<if test="item_id != null">item_id,</if> 
+			<if test="rp_date != null">rp_date,</if> 
+			<if test="unit != null">unit,</if> 
+			<if test="amount != null">amount,</if> 
+			<if test="content != null">content,</if> 
+			<if test="create_time != null">create_time,</if> 
+		</trim>
+		<![CDATA[) values (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">#{id},</if> 
+			<if test="type != null">#{type},</if> 
+			<if test="staff_id != null">#{staff_id},</if> 
+			<if test="item_id != null">#{item_id},</if> 
+			<if test="rp_date != null">#{rp_date},</if> 
+			<if test="unit != null">#{unit},</if> 
+			<if test="amount != null">#{amount},</if> 
+			<if test="content != null">#{content},</if> 
+			<if test="create_time != null">#{create_time},</if> 
+		</trim>
+		<![CDATA[)]]>
+	</insert>
+
+	<update id="updateRewardPunishment" parameterType="RewardPunishment">
+		update reward_punishment
+		<set>
+			<if test="type != null">type=#{type},</if>
+			<if test="staff_id != null">staff_id=#{staff_id},</if>
+			<if test="item_id != null">item_id=#{item_id},</if>
+			<if test="rp_date != null">rp_date=#{rp_date},</if>
+			<if test="map.null_rp_date != null">rp_date=null,</if>
+			<if test="unit != null">unit=#{unit},</if>
+			<if test="amount != null">amount=#{amount},</if>
+			<if test="map.null_amount != null">amount=null,</if>
+			<if test="content != null">content=#{content},</if>
+			<if test="create_time != null">create_time=#{create_time},</if>
+		</set>
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</update>
+	
+	<delete id="deleteRewardPunishment" parameterType="RewardPunishment">
+		delete from reward_punishment 
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</delete>
+</mapper>

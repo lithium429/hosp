@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="entity.PublicityColumn">  
+	<resultMap id="publicityColumnResult" type="PublicityColumn">
+		<result column="id" property="id" jdbcType="DECIMAL" />
+		<result column="type" property="type" jdbcType="DECIMAL" />
+		<result column="title" property="title" jdbcType="VARCHAR" />
+		<result column="content" property="content" jdbcType="VARCHAR" />
+		<result column="sort" property="sort" jdbcType="DECIMAL" />
+		<result column="creator_id" property="creator_id" jdbcType="DECIMAL" />
+		<result column="create_time" property="create_time" jdbcType="TIMESTAMP" />
+		<collection property="files" resultMap="entity.PublicityColumnFile.publicityColumnFileResult" />
+    </resultMap>
+
+	<sql id="sf-publicityColumn">
+		<where>
+			<if test="id != null">
+				and a.id = #{id}
+			</if>
+			<if test="type != null">
+				and a.type = #{type}
+			</if>
+			<if test="title != null">
+				and a.title = #{title}
+			</if>
+			<if test="content != null">
+				and a.content = #{content}
+			</if>
+			<if test="sort != null">
+				and a.sort = #{sort}
+			</if>
+			<if test="creator_id != null">
+				and a.creator_id = #{creator_id}
+			</if>
+			<if test="create_time != null">
+				and a.create_time = #{create_time}
+			</if>
+			<if test="map.keyword != null">
+				and a.title like concat('%',#{map.keyword},'%')
+			</if>
+			<if test="map.ids != null">
+				and a.id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+			<if test="map.title_valid != null">
+				and a.id != #{map.id} and a.title = #{map.title}
+			</if>
+			<if test="map.sort_max != null">
+				and #{map.sort_max} > a.sort
+			</if><!-- 向上移动 -->
+			<if test="map.sort_min != null">
+				and a.sort > #{map.sort_min}
+			</if>
+		</where> 
+	</sql>
+	
+	<sql id="sf-publicityColumn-order">
+		<include refid="sf-publicityColumn" />
+		<if test="map.sort_order_desc != null">
+			order by a.sort desc
+		</if>
+		<if test="map.sort_order_asc != null">
+			order by a.sort
+		</if>
+	</sql>
+
+	<select id="selectPublicityColumn" resultMap="publicityColumnResult" parameterType="PublicityColumn">
+		select a.*,b.type as f_type, b.file_id as f_file_id, b.create_time as f_create_time,
+		case when b.type = '3' then c.url else b.url end as f_url,
+		case when b.type = '3' then c.name else b.name end as f_name,b.sort as f_sort, b.id as f_id 
+		from publicity_column a left join publicity_column_file b on a.id = b.pc_id
+		left join file c on b.file_id = c.id and b.type = 3
+		<include refid="sf-publicityColumn" />
+	</select>
+	
+	<select id="selectPublicityColumnList" resultType="PublicityColumn" parameterType="PublicityColumn">
+		select a.* from publicity_column a
+		<include refid="sf-publicityColumn" />
+	</select>
+	
+	<select id="selectPublicityColumnCount" resultType="int" parameterType="PublicityColumn">
+		select count(1) from publicity_column a
+		<include refid="sf-publicityColumn" />
+	</select>
+	
+	<select id="selectPublicityColumnToSort" resultType="PublicityColumn" parameterType="PublicityColumn">
+		select a.* from publicity_column a
+		<include refid="sf-publicityColumn-order" />
+		limit 0,1
+	</select>
+	
+	<select id="selectPublicityColumnPageList" resultType="PublicityColumn" parameterType="PublicityColumn">
+		select a.* from publicity_column a
+		<include refid="sf-publicityColumn-order" />
+		limit #{map.startIndex},#{map.pageSize}
+	</select>
+	
+	<select id="selectPublicityColumnSort" resultType="int" parameterType="PublicityColumn">
+		select max(a.sort) from publicity_column a
+		<include refid="sf-publicityColumn" />
+	</select>
+	
+
+	<insert id="insertPublicityColumn" parameterType="PublicityColumn" useGeneratedKeys="true"
+		keyProperty="id"> 
+		<![CDATA[insert into publicity_column (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">id,</if> 
+			<if test="type != null">type,</if> 
+			<if test="title != null">title,</if> 
+			<if test="content != null">content,</if> 
+			<if test="sort != null">sort,</if> 
+			<if test="creator_id != null">creator_id,</if> 
+			<if test="create_time != null">create_time,</if> 
+		</trim>
+		<![CDATA[) values (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">#{id},</if> 
+			<if test="type != null">#{type},</if> 
+			<if test="title != null">#{title},</if> 
+			<if test="content != null">#{content},</if> 
+			<if test="sort != null">#{sort},</if> 
+			<if test="creator_id != null">#{creator_id},</if> 
+			<if test="create_time != null">#{create_time},</if> 
+		</trim>
+		<![CDATA[)]]>
+	</insert>
+
+	<update id="updatePublicityColumn" parameterType="PublicityColumn">
+		update publicity_column
+		<set>
+			<if test="type != null">type=#{type},</if>
+			<if test="title != null">title=#{title},</if>
+			<if test="content != null">content=#{content},</if>
+			<if test="sort != null">sort=#{sort},</if>
+			<if test="creator_id != null">creator_id=#{creator_id},</if>
+			<if test="create_time != null">create_time=#{create_time},</if>
+		</set>
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="map.sort != null">
+				and sort = #{map.sort}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</update>
+	
+	<delete id="deletePublicityColumn" parameterType="PublicityColumn">
+		delete from publicity_column 
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</delete>
+</mapper>

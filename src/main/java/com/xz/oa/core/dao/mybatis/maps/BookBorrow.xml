@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="entity.BookBorrow">  
+	<resultMap id="bookBorrowResult" type="BookBorrow">
+		<result column="id" property="id" jdbcType="DECIMAL" />
+		<result column="return_time" property="return_time"  />
+		<result column="verify_state" property="verify_state" jdbcType="DECIMAL" />
+		<result column="book_id" property="book_id" jdbcType="DECIMAL" />
+		<result column="creator_id" property="creator_id" jdbcType="DECIMAL" />
+		<result column="create_time" property="create_time"  />
+    </resultMap>
+
+	<sql id="sf-bookBorrow">
+		<where>
+			<if test="id != null">
+				and a.id = #{id}
+			</if>
+			<if test="return_time != null">
+				and a.return_time = #{return_time}
+			</if>
+			<if test="verify_state != null">
+				and a.verify_state = #{verify_state}
+			</if>
+			<if test="book_id != null">
+				and a.book_id = #{book_id}
+			</if>
+			<if test="creator_id != null">
+				and a.creator_id = #{creator_id}
+			</if>
+			<if test="create_time != null">
+				and a.create_time = #{create_time}
+			</if>
+			<if test="map.keyword != null">
+				and a.keyword like concat('%',#{map.keyword},'%')
+			</if>
+			<if test="map.name != null">
+				and b.name like concat('%',#{map.name},'%')
+			</if>
+			<if test="map.author != null">
+				and b.author like concat('%',#{map.author},'%')
+			</if>
+			<if test="map.type_id != null">
+				and b.type_id = #{map.type_id}
+			</if>
+			<if test="map.creator_id != null">
+				and a.creator_id = #{map.creator_id}
+			</if>
+			<if test="map.ids != null">
+				and a.id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+		<if test="map.sort != null">
+			order by a.id desc
+		</if>
+	</sql>
+
+	<select id="selectBookBorrow" resultType="BookBorrow" parameterType="BookBorrow">
+		select a.*,b.name,b.code,b.image_url,c.name as type_name,d.real_name as creator_name,e.real_name as verify_user_name from book_borrow a 
+		left join book b on a.book_id=b.id left join book_type c on b.type_id=c.id 
+		left join user d on a.creator_id=d.id left join user e on a.verify_user_id=e.id
+		<include refid="sf-bookBorrow" />
+	</select>
+	
+	<select id="selectBookBorrowList" resultType="BookBorrow" parameterType="BookBorrow">
+		select a.* from book_borrow a
+		<include refid="sf-bookBorrow" />
+	</select>
+	
+	<select id="selectBookBorrowCount" resultType="int" parameterType="BookBorrow">
+		select count(1) from book_borrow a left join book b on a.book_id=b.id
+		<include refid="sf-bookBorrow" />
+	</select>
+	
+	<select id="selectBookBorrowPageList" resultType="BookBorrow" parameterType="BookBorrow">
+		select a.*,b.name,b.code,b.image_url,c.name as type_name,d.real_name as creator_name,e.real_name as verify_user_name from book_borrow a 
+		left join book b on a.book_id=b.id left join book_type c on b.type_id=c.id
+		 left join user d on a.creator_id=d.id left join user e on a.verify_user_id=e.id 
+		<include refid="sf-bookBorrow" />
+		limit #{map.startIndex},#{map.pageSize}
+	</select>
+	
+	<select id="selectBookBorrowSort" resultType="int" parameterType="BookBorrow">
+		select max(a.id) from book_borrow a
+		<include refid="sf-bookBorrow" />
+	</select>
+
+	<insert id="insertBookBorrow" parameterType="BookBorrow" useGeneratedKeys="true"
+		keyProperty="id"> 
+		<![CDATA[insert into book_borrow (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">id,</if> 
+			<if test="return_time != null">return_time,</if> 
+			<if test="verify_state != null">verify_state,</if> 
+			<if test="book_id != null">book_id,</if> 
+			<if test="creator_id != null">creator_id,</if> 
+			<if test="create_time != null">create_time,</if> 
+			<if test="verify_user_id != null">verify_user_id,</if>
+			<if test="verify_time != null">verify_time,</if>
+			<if test="verify_content != null">verify_content,</if> 
+		</trim>
+		<![CDATA[) values (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">#{id},</if> 
+			<if test="return_time != null">#{return_time},</if> 
+			<if test="verify_state != null">#{verify_state},</if> 
+			<if test="book_id != null">#{book_id},</if> 
+			<if test="creator_id != null">#{creator_id},</if> 
+			<if test="create_time != null">#{create_time},</if> 
+			<if test="verify_user_id != null">#{verify_user_id},</if> 
+			<if test="verify_time != null">#{verify_time},</if> 
+			<if test="verify_content != null">#{verify_content},</if> 
+		</trim>
+		<![CDATA[)]]>
+	</insert>
+
+	<update id="updateBookBorrow" parameterType="BookBorrow">
+		update book_borrow
+		<set>
+			<if test="return_time != null">return_time=#{return_time},</if>
+			<if test="verify_state != null">verify_state=#{verify_state},</if>
+			<if test="book_id != null">book_id=#{book_id},</if>
+			<if test="creator_id != null">creator_id=#{creator_id},</if>
+			<if test="create_time != null">create_time=#{create_time},</if>
+			<if test="verify_user_id != null">verify_user_id=#{verify_user_id},</if>
+			<if test="verify_time != null">verify_time=#{verify_time},</if>
+			<if test="verify_content != null">verify_content=#{verify_content},</if>
+		</set>
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</update>
+	
+	<delete id="deleteBookBorrow" parameterType="BookBorrow">
+		delete from book_borrow 
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</delete>
+</mapper>

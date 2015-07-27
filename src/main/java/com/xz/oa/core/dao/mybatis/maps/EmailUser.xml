@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="entity.EmailUser">  
+	<resultMap id="emailUserResult" type="EmailUser">
+		<result column="id" property="id" jdbcType="DECIMAL" />
+		<result column="type" property="type" jdbcType="DECIMAL" />
+		<result column="user_id" property="user_id" jdbcType="DECIMAL" />
+		<result column="is_forward" property="is_forward" jdbcType="VARCHAR" />
+		<result column="is_reply" property="is_reply" jdbcType="VARCHAR" />
+		<result column="reply_email_id" property="reply_email_id" jdbcType="DECIMAL" />
+		<result column="is_delete" property="is_delete" jdbcType="VARCHAR" />
+		<result column="is_send" property="is_send" jdbcType="VARCHAR" />
+		<result column="is_read" property="is_read" jdbcType="VARCHAR" />
+		<result column="is_secret" property="is_secret" jdbcType="VARCHAR" />
+		<result column="is_copy" property="is_copy" jdbcType="VARCHAR" />
+		<result column="email_id" property="email_id" jdbcType="DECIMAL" />
+    </resultMap>
+    
+    <resultMap id="emailUserResult_help" type="EmailUser" extends="emailUserResult">
+		<result column="sender_id" property="sender_id" jdbcType="DECIMAL" />
+		<result column="sender_name" property="sender_name" jdbcType="VARCHAR" />
+		<result column="subject" property="subject" jdbcType="VARCHAR" />
+		<result column="create_time" property="create_time"  />
+		<result column="is_file" property="is_file" jdbcType="VARCHAR" />
+		<collection property="users" resultMap="emailReceiverResult" />
+    </resultMap>
+    
+    <resultMap id="emailUserResult_help1" type="EmailUser" extends="emailUserResult">
+		<result column="sender_id" property="sender_id" jdbcType="DECIMAL" />
+		<result column="sender_name" property="sender_name" jdbcType="VARCHAR" />
+		<result column="subject" property="subject" jdbcType="VARCHAR" />
+		<result column="content" property="content" jdbcType="VARCHAR" />
+		<result column="create_time" property="create_time"  />
+		<result column="is_file" property="is_file" jdbcType="VARCHAR" />
+		<collection property="users" resultMap="emailReceiverResult" />
+		<collection property="files" resultMap="emailFileResult" />
+    </resultMap>
+    
+    <resultMap id="emailReceiverResult" type="EmailReceiver">
+		<result column="user_id_receiver" property="user_id" jdbcType="DECIMAL" />
+		<result column="user_name_receiver" property="user_name" jdbcType="VARCHAR" />
+		<result column="type_receiver" property="type" jdbcType="DECIMAL" />
+    </resultMap>
+    
+    <resultMap id="emailFileResult" type="EmailFile">
+		<result column="ef_id" property="id" jdbcType="DECIMAL" />
+		<result column="ef_email_id" property="email_id" jdbcType="DECIMAL" />
+		<result column="ef_type" property="type" jdbcType="DECIMAL" />
+		<result column="ef_file_id" property="file_id" jdbcType="DECIMAL" />
+		<result column="ef_url" property="url" jdbcType="VARCHAR" />
+		<result column="ef_name" property="name" jdbcType="VARCHAR" />
+		<result column="ef_sort" property="sort" jdbcType="DECIMAL" />
+    </resultMap>
+
+	<sql id="sf-emailUser">
+		<where>
+			<if test="id != null">
+				and a.id = #{id}
+			</if>
+			<if test="type != null">
+				and a.type = #{type}
+			</if>
+			<if test="user_id != null">
+				and a.user_id = #{user_id}
+			</if>
+			<if test="is_forward != null">
+				and a.is_forward = #{is_forward}
+			</if>
+			<if test="is_reply != null">
+				and a.is_reply = #{is_reply}
+			</if>
+			<if test="reply_email_id != null">
+				and a.reply_email_id = #{reply_email_id}
+			</if>
+			<if test="is_delete != null">
+				and a.is_delete = #{is_delete}
+			</if>
+			<if test="is_send != null">
+				and a.is_send = #{is_send}
+			</if>
+			<if test="is_read != null">
+				and a.is_read = #{is_read}
+			</if>
+			<if test="is_secret != null">
+				and a.is_secret = #{is_secret}
+			</if>
+			<if test="is_copy != null">
+				and a.is_copy = #{is_copy}
+			</if>
+			<if test="email_id != null">
+				and a.email_id = #{email_id}
+			</if>
+			<if test="map.keyword != null">
+				and a.keyword like concat('%',#{map.keyword},'%')
+			</if>
+			<if test="map.sender_name != null">
+				and c.name like concat('%',#{map.sender_name},'%')
+			</if>
+			<if test="map.subject != null">
+				and b.subject like concat('%',#{map.subject},'%')
+			</if>
+			<if test="map.receiver_name != null">
+				and f.name like concat('%',#{map.receiver_name},'%')
+			</if>
+			<if test="map.receiver_name_my != null">
+				and (a.type=1 or #{map.receiver_name_my} like concat('%',#{map.receiver_name},'%'))
+			</if>
+			<if test="map.create_time_min != null">
+				and b.create_time >= #{map.create_time_min}
+			</if>
+			<if test="map.create_time_max != null">
+				and #{map.create_time_max} >= b.create_time
+			</if>
+			<if test="map.ids != null">
+				and a.id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</sql>
+	
+	<sql id="sf-emailUser-order">
+		<include refid="sf-emailUser" />
+		<if test="map.sort != null">
+			order by a.id desc
+		</if>
+	</sql>
+
+	<select id="selectEmailUser" resultMap="emailUserResult_help1" parameterType="EmailUser">
+		select a.*,e.user_id as user_id_receiver,f.real_name as user_name_receiver,e.type as type_receiver,
+		g.email_id as ef_email_id, g.type as ef_type, g.file_id as ef_file_id, 
+		case when g.type = '3' then h.url else g.url end as ef_url,
+		case when g.type = '3' then h.name else g.name end as ef_name, 
+		g.sort as ef_sort,g.id as ef_id,i.content from (select t.* from (
+		select a.*,b.sender_id,b.subject,b.is_file,b.create_time,c.real_name as sender_name,d.real_name as user_name
+		from email_user a left join email b on a.email_id=b.id 
+		left join user c on b.sender_id=c.id left join user d on a.user_id=d.id 
+		left join email_receiver e on e.email_id=b.id left join user f on e.user_id=f.id
+		<include refid="sf-emailUser" /> group by a.id) as t order by t.id desc
+		) as a left join email_receiver e on e.email_id=a.email_id left join user f on e.user_id=f.id
+		left join email_file g on a.email_id = g.email_id
+		left join file h on g.file_id = h.id and g.type = 3
+		left join email_content i on  a.email_id = i.email_id
+	</select>
+	
+	<select id="selectEmailUserList" resultType="EmailUser" parameterType="EmailUser">
+		select a.* from email_user a
+		<include refid="sf-emailUser-order" />
+	</select>
+	
+	<select id="selectEmailUserCount" resultType="int" parameterType="EmailUser">
+		select count(1) from (select count(1) from email_user a left join email b on a.email_id=b.id 
+		left join user c on b.sender_id=c.id left join user d on a.user_id=d.id 
+		left join email_receiver e on e.email_id=b.id left join user f on e.user_id=f.id
+		<include refid="sf-emailUser" />
+		group by a.id) as t
+	</select>
+	
+	<select id="selectEmailUserPageList" resultMap="emailUserResult_help" parameterType="EmailUser">
+		select a.*,e.user_id as user_id_receiver,f.real_name as user_name_receiver,e.type as type_receiver from (select t.* from (
+		select a.*,b.sender_id,b.subject,b.is_file,b.create_time,c.real_name as sender_name,d.real_name as user_name
+		from email_user a left join email b on a.email_id=b.id 
+		left join user c on b.sender_id=c.id left join user d on a.user_id=d.id 
+		left join email_receiver e on e.email_id=b.id left join user f on e.user_id=f.id
+		<include refid="sf-emailUser" /> group by a.id) as t order by t.id desc
+		limit #{map.startIndex},#{map.pageSize}) as a left join email_receiver e on e.email_id=a.email_id left join user f on e.user_id=f.id
+	</select>
+	
+	<select id="selectEmailUserSort" resultType="int" parameterType="EmailUser">
+		select max(a.id) from email_user a
+		<include refid="sf-emailUser" />
+	</select>
+
+	<insert id="insertEmailUser" parameterType="EmailUser" useGeneratedKeys="true"
+		keyProperty="id"> 
+		<![CDATA[insert into email_user (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">id,</if> 
+			<if test="type != null">type,</if> 
+			<if test="user_id != null">user_id,</if> 
+			<if test="is_forward != null">is_forward,</if> 
+			<if test="is_reply != null">is_reply,</if> 
+			<if test="reply_email_id != null">reply_email_id,</if> 
+			<if test="is_delete != null">is_delete,</if> 
+			<if test="is_send != null">is_send,</if> 
+			<if test="is_read != null">is_read,</if> 
+			<if test="is_secret != null">is_secret,</if> 
+			<if test="is_copy != null">is_copy,</if> 
+			<if test="email_id != null">email_id,</if> 
+		</trim>
+		<![CDATA[) values (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">#{id},</if> 
+			<if test="type != null">#{type},</if> 
+			<if test="user_id != null">#{user_id},</if> 
+			<if test="is_forward != null">#{is_forward},</if> 
+			<if test="is_reply != null">#{is_reply},</if> 
+			<if test="reply_email_id != null">#{reply_email_id},</if> 
+			<if test="is_delete != null">#{is_delete},</if> 
+			<if test="is_send != null">#{is_send},</if> 
+			<if test="is_read != null">#{is_read},</if> 
+			<if test="is_secret != null">#{is_secret},</if> 
+			<if test="is_copy != null">#{is_copy},</if> 
+			<if test="email_id != null">#{email_id},</if> 
+		</trim>
+		<![CDATA[)]]>
+	</insert>
+
+	<update id="updateEmailUser" parameterType="EmailUser">
+		update email_user
+		<set>
+			<if test="type != null">type=#{type},</if>
+			<if test="user_id != null">user_id=#{user_id},</if>
+			<if test="is_forward != null">is_forward=#{is_forward},</if>
+			<if test="is_reply != null">is_reply=#{is_reply},</if>
+			<if test="reply_email_id != null">reply_email_id=#{reply_email_id},</if>
+			<if test="is_delete != null">is_delete=#{is_delete},</if>
+			<if test="is_send != null">is_send=#{is_send},</if>
+			<if test="is_read != null">is_read=#{is_read},</if>
+			<if test="is_secret != null">is_secret=#{is_secret},</if>
+			<if test="is_copy != null">is_copy=#{is_copy},</if>
+			<if test="email_id != null">email_id=#{email_id},</if>
+		</set>
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</update>
+	
+	<delete id="deleteEmailUser" parameterType="EmailUser">
+		delete from email_user 
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</delete>
+</mapper>

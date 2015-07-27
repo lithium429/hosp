@@ -1,0 +1,6 @@
+user_name=admin,ceshi1,doc,nur,swat,xiaoluo,terry,test
+dept_name=临时部门
+role_name=普通用户
+ssoUrl=http://wxxt.rz-cn.com:8077/UniESBService.wsdl
+connTimeout=10000
+receiveTimeout=6000

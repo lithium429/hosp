@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="entity.BookType">  
+	<resultMap id="bookTypeResult" type="BookType">
+		<result column="id" property="id" jdbcType="DECIMAL" />
+		<result column="name" property="name" jdbcType="VARCHAR" />
+		<result column="sort" property="sort" jdbcType="DECIMAL" />
+		<result column="remark" property="remark" jdbcType="VARCHAR" />
+		<result column="creator_id" property="creator_id" jdbcType="DECIMAL" />
+		<result column="create_time" property="create_time"  />
+    </resultMap>
+
+	<sql id="sf-bookType">
+		<where>
+			<if test="id != null">
+				and a.id = #{id}
+			</if>
+			<if test="name != null">
+				and a.name = #{name}
+			</if>
+			<if test="sort != null">
+				and a.sort = #{sort}
+			</if>
+			<if test="remark != null">
+				and a.remark = #{remark}
+			</if>
+			<if test="creator_id != null">
+				and a.creator_id = #{creator_id}
+			</if>
+			<if test="create_time != null">
+				and a.create_time = #{create_time}
+			</if>
+			<if test="map.keyword != null">
+				and a.keyword like concat('%',#{map.keyword},'%')
+			</if>
+			<if test="map.name != null">
+				and a.name like concat('%',#{map.name},'%')
+			</if>
+			<if test="map.name_valid != null">
+				and a.id !=#{map.id} and a.name =#{map.name_valid}
+			</if>
+			<if test="map.ids != null">
+				and a.id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+		<if test="map.sort_order != null">
+			order by a.id desc
+		</if>
+	</sql>
+
+	<select id="selectBookType" resultType="BookType" parameterType="BookType">
+		select a.* from book_type a
+		<include refid="sf-bookType" />
+	</select>
+	
+	<select id="selectBookTypeList" resultType="BookType" parameterType="BookType">
+		select a.* from book_type a
+		<include refid="sf-bookType" />
+	</select>
+	
+	<select id="selectBookTypeCount" resultType="int" parameterType="BookType">
+		select count(1) from book_type a
+		<include refid="sf-bookType" />
+	</select>
+	
+	<select id="selectBookTypePageList" resultType="BookType" parameterType="BookType">
+		select a.* from book_type a
+		<include refid="sf-bookType" />
+		limit #{map.startIndex},#{map.pageSize}
+	</select>
+	
+	<select id="selectBookTypeSort" resultType="int" parameterType="BookType">
+		select max(a.id) from book_type a
+		<include refid="sf-bookType" />
+	</select>
+
+	<insert id="insertBookType" parameterType="BookType" useGeneratedKeys="true"
+		keyProperty="id"> 
+		<![CDATA[insert into book_type (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">id,</if> 
+			<if test="name != null">name,</if> 
+			<if test="sort != null">sort,</if> 
+			<if test="remark != null">remark,</if> 
+			<if test="creator_id != null">creator_id,</if> 
+			<if test="create_time != null">create_time,</if> 
+		</trim>
+		<![CDATA[) values (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">#{id},</if> 
+			<if test="name != null">#{name},</if> 
+			<if test="sort != null">#{sort},</if> 
+			<if test="remark != null">#{remark},</if> 
+			<if test="creator_id != null">#{creator_id},</if> 
+			<if test="create_time != null">#{create_time},</if> 
+		</trim>
+		<![CDATA[)]]>
+	</insert>
+
+	<update id="updateBookType" parameterType="BookType">
+		update book_type
+		<set>
+			<if test="name != null">name=#{name},</if>
+			<if test="sort != null">sort=#{sort},</if>
+			<if test="remark != null">remark=#{remark},</if>
+			<if test="creator_id != null">creator_id=#{creator_id},</if>
+			<if test="create_time != null">create_time=#{create_time},</if>
+		</set>
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</update>
+	
+	<delete id="deleteBookType" parameterType="BookType">
+		delete from book_type 
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</delete>
+</mapper>

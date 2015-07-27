@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="entity.LeaveInfo">  
+	<resultMap id="leaveInfoResult" type="LeaveInfo">
+		<result column="id" property="id" jdbcType="DECIMAL" />
+		<result column="process_instance_id" property="process_instance_id" jdbcType="VARCHAR" />
+		<result column="user_id" property="user_id" jdbcType="DECIMAL" />
+		<result column="type" property="type" jdbcType="DECIMAL" />
+		<result column="reason" property="reason" jdbcType="VARCHAR" />
+		<result column="start_time" property="start_time" jdbcType="TIMESTAMP" />
+		<result column="end_time" property="end_time" jdbcType="TIMESTAMP" />
+		<result column="reality_start_time" property="reality_start_time" jdbcType="TIMESTAMP" />
+		<result column="reality_end_time" property="reality_end_time" jdbcType="TIMESTAMP" />
+		<result column="is_notify" property="is_notify" jdbcType="VARCHAR" />
+		<result column="creator_id" property="creator_id" jdbcType="DECIMAL" />
+		<result column="creator_name" property="creator_name" jdbcType="VARCHAR" />
+		<result column="create_time" property="create_time" jdbcType="TIMESTAMP" />
+    </resultMap>
+
+	<sql id="sf-leaveInfo">
+		<where>
+			<if test="id != null">
+				and a.id = #{id}
+			</if>
+			<if test="process_instance_id != null">
+				and a.process_instance_id = #{process_instance_id}
+			</if>
+			<if test="user_id != null">
+				and a.user_id = #{user_id}
+			</if>
+			<if test="type != null">
+				and a.type = #{type}
+			</if>
+			<if test="reason != null">
+				and a.reason = #{reason}
+			</if>
+			<if test="start_time != null">
+				and a.start_time = #{start_time}
+			</if>
+			<if test="end_time != null">
+				and a.end_time = #{end_time}
+			</if>
+			<if test="reality_start_time != null">
+				and a.reality_start_time = #{reality_start_time}
+			</if>
+			<if test="reality_end_time != null">
+				and a.reality_end_time = #{reality_end_time}
+			</if>
+			<if test="is_notify != null">
+				and a.is_notify = #{is_notify}
+			</if>
+			<if test="creator_id != null">
+				and a.creator_id = #{creator_id}
+			</if>
+			<if test="create_time != null">
+				and a.create_time = #{create_time}
+			</if>
+			<if test="map.keyword != null">
+				and a.keyword like concat('%',#{map.keyword},'%')
+			</if>
+			<if test="map.ids != null">
+				and a.id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+		<if test="map.sort != null">
+			order by a.id desc
+		</if>
+	</sql>
+
+	<select id="selectLeaveInfo" resultType="LeaveInfo" parameterType="LeaveInfo">
+		select a.*, b.name as user_name from leave_info a left join user b on a.user_id = b.id
+		<include refid="sf-leaveInfo" />
+	</select>
+	
+	<select id="selectLeaveInfoList" resultType="LeaveInfo" parameterType="LeaveInfo">
+		select a.* from leave_info a
+		<include refid="sf-leaveInfo" />
+	</select>
+	
+	<select id="selectLeaveInfoCount" resultType="int" parameterType="LeaveInfo">
+		select count(1) from leave_info a
+		<include refid="sf-leaveInfo" />
+	</select>
+	
+	<select id="selectLeaveInfoPageList" resultType="LeaveInfo" parameterType="LeaveInfo">
+		select a.* from leave_info a
+		<include refid="sf-leaveInfo" />
+		limit #{map.startIndex},#{map.pageSize}
+	</select>
+
+	<insert id="insertLeaveInfo" parameterType="LeaveInfo" useGeneratedKeys="true"
+		keyProperty="id"> 
+		<![CDATA[insert into leave_info (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">id,</if> 
+			<if test="process_instance_id != null">process_instance_id,</if> 
+			<if test="user_id != null">user_id,</if> 
+			<if test="type != null">type,</if> 
+			<if test="reason != null">reason,</if> 
+			<if test="start_time != null">start_time,</if> 
+			<if test="end_time != null">end_time,</if> 
+			<if test="reality_start_time != null">reality_start_time,</if> 
+			<if test="reality_end_time != null">reality_end_time,</if> 
+			<if test="is_notify != null">is_notify,</if> 
+			<if test="creator_id != null">creator_id,</if> 
+			<if test="create_time != null">create_time,</if> 
+		</trim>
+		<![CDATA[) values (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">#{id},</if> 
+			<if test="process_instance_id != null">#{process_instance_id},</if> 
+			<if test="user_id != null">#{user_id},</if> 
+			<if test="type != null">#{type},</if> 
+			<if test="reason != null">#{reason},</if> 
+			<if test="start_time != null">#{start_time},</if> 
+			<if test="end_time != null">#{end_time},</if> 
+			<if test="reality_start_time != null">#{reality_start_time},</if> 
+			<if test="reality_end_time != null">#{reality_end_time},</if> 
+			<if test="is_notify != null">#{is_notify},</if> 
+			<if test="creator_id != null">#{creator_id},</if> 
+			<if test="create_time != null">#{create_time},</if> 
+		</trim>
+		<![CDATA[)]]>
+	</insert>
+
+	<update id="updateLeaveInfo" parameterType="LeaveInfo">
+		update leave_info
+		<set>
+			<if test="process_instance_id != null">process_instance_id=#{process_instance_id},</if>
+			<if test="user_id != null">user_id=#{user_id},</if>
+			<if test="type != null">type=#{type},</if>
+			<if test="reason != null">reason=#{reason},</if>
+			<if test="start_time != null">start_time=#{start_time},</if>
+			<if test="end_time != null">end_time=#{end_time},</if>
+			<if test="reality_start_time != null">reality_start_time=#{reality_start_time},</if>
+			<if test="reality_end_time != null">reality_end_time=#{reality_end_time},</if>
+			<if test="is_notify != null">is_notify=#{is_notify},</if>
+			<if test="creator_id != null">creator_id=#{creator_id},</if>
+			<if test="create_time != null">create_time=#{create_time},</if>
+		</set>
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</update>
+	
+	<delete id="deleteLeaveInfo" parameterType="LeaveInfo">
+		delete from leave_info 
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</delete>
+</mapper>

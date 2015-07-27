@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="entity.SchedulingUser">  
+	<resultMap id="schedulingUserResult" type="SchedulingUser">
+		<result column="uid" property="id" jdbcType="DECIMAL" />
+		<result column="scheduling_id" property="scheduling_id" jdbcType="DECIMAL" />
+		<result column="user_id" property="user_id" jdbcType="DECIMAL" />
+		<result column="user_name" property="user_name" jdbcType="VARCHAR" />
+		<result column="user_mobile" property="user_mobile" jdbcType="VARCHAR" />
+    </resultMap>
+
+	<sql id="sf-schedulingUser">
+		<where>
+			<if test="id != null">
+				and a.id = #{id}
+			</if>
+			<if test="scheduling_id != null">
+				and a.scheduling_id = #{scheduling_id}
+			</if>
+			<if test="user_id != null">
+				and a.user_id = #{user_id}
+			</if>
+			<if test="map.keyword != null">
+				and a.keyword like concat('%',#{map.keyword},'%')
+			</if>
+			<if test="map.ids != null">
+				and a.id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+		<if test="map.sort != null">
+			order by a.id desc
+		</if>
+	</sql>
+
+	<select id="selectSchedulingUser" resultType="SchedulingUser" parameterType="SchedulingUser">
+		select a.* from scheduling_user a
+		<include refid="sf-schedulingUser" />
+	</select>
+	
+	<select id="selectSchedulingUserList" resultType="SchedulingUser" parameterType="SchedulingUser">
+		select a.* from scheduling_user a
+		<include refid="sf-schedulingUser" />
+	</select>
+	
+	<select id="selectSchedulingUserCount" resultType="int" parameterType="SchedulingUser">
+		select count(1) from scheduling_user a
+		<include refid="sf-schedulingUser" />
+	</select>
+	
+	<select id="selectSchedulingUserPageList" resultType="SchedulingUser" parameterType="SchedulingUser">
+		select a.* from scheduling_user a
+		<include refid="sf-schedulingUser" />
+		limit #{map.startIndex},#{map.pageSize}
+	</select>
+
+	<insert id="insertSchedulingUser" parameterType="SchedulingUser" useGeneratedKeys="true"
+		keyProperty="id"> 
+		<![CDATA[insert into scheduling_user (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">id,</if> 
+			<if test="scheduling_id != null">scheduling_id,</if> 
+			<if test="user_id != null">user_id,</if> 
+		</trim>
+		<![CDATA[) values (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">#{id},</if> 
+			<if test="scheduling_id != null">#{scheduling_id},</if> 
+			<if test="user_id != null">#{user_id},</if> 
+		</trim>
+		<![CDATA[)]]>
+	</insert>
+
+	<update id="updateSchedulingUser" parameterType="SchedulingUser">
+		update scheduling_user
+		<set>
+			<if test="scheduling_id != null">scheduling_id=#{scheduling_id},</if>
+			<if test="user_id != null">user_id=#{user_id},</if>
+		</set>
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</update>
+	
+	<delete id="deleteSchedulingUser" parameterType="SchedulingUser">
+		delete from scheduling_user 
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="scheduling_id != null">
+				and scheduling_id = #{scheduling_id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</delete>
+</mapper>

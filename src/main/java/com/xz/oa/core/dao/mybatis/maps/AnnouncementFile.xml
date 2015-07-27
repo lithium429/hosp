@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="entity.AnnouncementFile">  
+	<resultMap id="announcementFileResult" type="AnnouncementFile">
+		<result column="af_id" property="id" jdbcType="DECIMAL" />
+		<result column="af_announcement_id" property="announcement_id" jdbcType="DECIMAL" />
+		<result column="af_type" property="type" jdbcType="DECIMAL" />
+		<result column="af_file_id" property="file_id" jdbcType="DECIMAL" />
+		<result column="af_url" property="url" jdbcType="VARCHAR" />
+		<result column="af_name" property="name" jdbcType="VARCHAR" />
+		<result column="af_sort" property="sort" jdbcType="DECIMAL" />
+		<result column="af_create_time" property="create_time"  />
+    </resultMap>
+
+	<sql id="sf-announcementFile">
+		<where>
+			<if test="id != null">
+				and a.id = #{id}
+			</if>
+			<if test="announcement_id != null">
+				and a.announcement_id = #{announcement_id}
+			</if>
+			<if test="type != null">
+				and a.type = #{type}
+			</if>
+			<if test="file_id != null">
+				and a.file_id = #{file_id}
+			</if>
+			<if test="url != null">
+				and a.url = #{url}
+			</if>
+			<if test="name != null">
+				and a.name = #{name}
+			</if>
+			<if test="sort != null">
+				and a.sort = #{sort}
+			</if>
+			<if test="create_time != null">
+				and a.create_time = #{create_time}
+			</if>
+			<if test="map.keyword != null">
+				and a.keyword like concat('%',#{map.keyword},'%')
+			</if>
+			<if test="map.ids != null">
+				and a.id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+		<if test="map.sort != null">
+			order by a.id desc
+		</if>
+	</sql>
+
+	<select id="selectAnnouncementFile" resultType="AnnouncementFile" parameterType="AnnouncementFile">
+		select a.sort,a.id,a.type,a.file_id,a.announcement_id,case when a.type = '3' then b.url else a.url end as url,
+		case when a.type = '3' then b.name else a.name end as name from announcement_file a left join file b on a.file_id = b.id and a.type = 3
+		<include refid="sf-announcementFile" />
+	</select>
+	
+	<select id="selectAnnouncementFileList" resultType="AnnouncementFile" parameterType="AnnouncementFile">
+		select a.* from announcement_file a
+		<include refid="sf-announcementFile" />
+	</select>
+	
+	<select id="selectAnnouncementFileCount" resultType="int" parameterType="AnnouncementFile">
+		select count(1) from announcement_file a
+		<include refid="sf-announcementFile" />
+	</select>
+	
+	<select id="selectAnnouncementFilePageList" resultType="AnnouncementFile" parameterType="AnnouncementFile">
+		select a.* from announcement_file a
+		<include refid="sf-announcementFile" />
+		limit #{map.startIndex},#{map.pageSize}
+	</select>
+	
+	<select id="selectAnnouncementFileSort" resultType="int" parameterType="AnnouncementFile">
+		select max(a.id) from announcement_file a
+		<include refid="sf-announcementFile" />
+	</select>
+
+	<insert id="insertAnnouncementFile" parameterType="AnnouncementFile" useGeneratedKeys="true"
+		keyProperty="id"> 
+		<![CDATA[insert into announcement_file (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">id,</if> 
+			<if test="announcement_id != null">announcement_id,</if> 
+			<if test="type != null">type,</if> 
+			<if test="file_id != null">file_id,</if> 
+			<if test="url != null">url,</if> 
+			<if test="name != null">name,</if> 
+			<if test="sort != null">sort,</if> 
+			<if test="create_time != null">create_time,</if> 
+		</trim>
+		<![CDATA[) values (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">#{id},</if> 
+			<if test="announcement_id != null">#{announcement_id},</if> 
+			<if test="type != null">#{type},</if> 
+			<if test="file_id != null">#{file_id},</if> 
+			<if test="url != null">#{url},</if> 
+			<if test="name != null">#{name},</if> 
+			<if test="sort != null">#{sort},</if> 
+			<if test="create_time != null">#{create_time},</if> 
+		</trim>
+		<![CDATA[)]]>
+	</insert>
+
+	<update id="updateAnnouncementFile" parameterType="AnnouncementFile">
+		update announcement_file
+		<set>
+			<if test="announcement_id != null">announcement_id=#{announcement_id},</if>
+			<if test="type != null">type=#{type},</if>
+			<if test="file_id != null">file_id=#{file_id},</if>
+			<if test="url != null">url=#{url},</if>
+			<if test="name != null">name=#{name},</if>
+			<if test="sort != null">sort=#{sort},</if>
+			<if test="create_time != null">create_time=#{create_time},</if>
+		</set>
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</update>
+	
+	<delete id="deleteAnnouncementFile" parameterType="AnnouncementFile">
+		delete from announcement_file 
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="announcement_id != null">
+				and announcement_id = #{announcement_id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</delete>
+</mapper>

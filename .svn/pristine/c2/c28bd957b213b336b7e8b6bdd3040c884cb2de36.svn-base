@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="entity.Leave">  
+	<resultMap id="leaveResult" type="Leave">
+		<result column="id" property="id" jdbcType="DECIMAL" />
+		<result column="staff_id" property="staff_id" jdbcType="DECIMAL" />
+		<result column="type" property="type" jdbcType="DECIMAL" />
+		<result column="verify_user_id" property="verify_user_id" jdbcType="DECIMAL" />
+		<result column="verify_state" property="verify_state" jdbcType="DECIMAL" />
+		<result column="verify_content" property="verify_content" jdbcType="VARCHAR" />
+		<result column="verify_time" property="verify_time"  />
+		<result column="reason" property="reason" jdbcType="VARCHAR" />
+		<result column="start_time" property="start_time"  />
+		<result column="end_time" property="end_time"  />
+		<result column="is_notify" property="is_notify" jdbcType="VARCHAR" />
+		<result column="creator_id" property="creator_id" jdbcType="DECIMAL" />
+		<result column="create_time" property="create_time"  />
+    </resultMap>
+
+	<sql id="sf-leave">
+		<where>
+			<if test="id != null">
+				and a.id = #{id}
+			</if>
+			<if test="staff_id != null">
+				and a.staff_id = #{staff_id}
+			</if>
+			<if test="type != null">
+				and a.type = #{type}
+			</if>
+			<if test="verify_user_id != null">
+				and a.verify_user_id = #{verify_user_id}
+			</if>
+			<if test="verify_state != null">
+				and a.verify_state = #{verify_state}
+			</if>
+			<if test="verify_content != null">
+				and a.verify_content = #{verify_content}
+			</if>
+			<if test="verify_time != null">
+				and a.verify_time = #{verify_time}
+			</if>
+			<if test="reason != null">
+				and a.reason = #{reason}
+			</if>
+			<if test="start_time != null">
+				and a.start_time = #{start_time}
+			</if>
+			<if test="end_time != null">
+				and a.end_time = #{end_time}
+			</if>
+			<if test="is_notify != null">
+				and a.is_notify = #{is_notify}
+			</if>
+			<if test="creator_id != null">
+				and a.creator_id = #{creator_id}
+			</if>
+			<if test="create_time != null">
+				and a.create_time = #{create_time}
+			</if>
+			<if test="map.keyword != null">
+				and a.keyword like concat('%',#{map.keyword},'%')
+			</if>
+			<if test="map.staff_name != null">
+				and b.name like concat('%',#{map.staff_name},'%')
+			</if>
+			<if test="map.verify_user_name != null">
+				and c.real_name like concat('%',#{map.verify_user_name},'%')
+			</if>
+			<if test="map.start_time_min != null">
+				and a.start_time >= #{map.start_time_min}
+			</if>
+			<if test="map.start_time_max != null">
+				and #{map.start_time_max} >= a.start_time
+			</if>
+			<if test="map.end_time_min != null">
+				and a.end_time >= #{map.end_time_min}
+			</if>
+			<if test="map.end_time_max != null">
+				and #{map.end_time_max} >= a.end_time
+			</if>
+			<if test="map.ids != null">
+				and a.id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+			<if test="map.verify_states != null">
+				and a.verify_state in
+				<foreach collection="map.verify_states" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+		<if test="map.sort != null">
+			order by a.id desc
+		</if>
+	</sql>
+
+	<select id="selectLeave" resultType="Leave" parameterType="Leave">
+		select a.*,b.name as staff_name,b.code as staff_code,c.real_name as verify_user_name,d.real_name as creator_name 
+		from leave_info a left join staff b on a.staff_id=b.id left join user c on a.verify_user_id=c.id left join user d on a.creator_id=d.id
+		<include refid="sf-leave" />
+	</select>
+	
+	<select id="selectLeaveList" resultType="Leave" parameterType="Leave">
+		select a.* from leave_info a
+		<include refid="sf-leave" />
+	</select>
+	
+	<select id="selectLeaveCount" resultType="int" parameterType="Leave">
+		select count(1) from leave_info a left join staff b on a.staff_id=b.id left join user c on a.verify_user_id=c.id left join user d on a.creator_id=d.id
+		<include refid="sf-leave" />
+	</select>
+	
+	<select id="selectLeavePageList" resultType="Leave" parameterType="Leave">
+		select a.*,b.name as staff_name,b.code as staff_code,c.real_name as verify_user_name,d.real_name as creator_name 
+		from leave_info a left join staff b on a.staff_id=b.id left join user c on a.verify_user_id=c.id left join user d on a.creator_id=d.id
+		<include refid="sf-leave" />
+		limit #{map.startIndex},#{map.pageSize}
+	</select>
+	
+	<select id="selectLeaveSort" resultType="int" parameterType="Leave">
+		select max(a.id) from leave_info a
+		<include refid="sf-leave" />
+	</select>
+
+	<insert id="insertLeave" parameterType="Leave" useGeneratedKeys="true"
+		keyProperty="id"> 
+		<![CDATA[insert into leave_info (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">id,</if> 
+			<if test="staff_id != null">staff_id,</if> 
+			<if test="type != null">type,</if> 
+			<if test="verify_user_id != null">verify_user_id,</if> 
+			<if test="verify_state != null">verify_state,</if> 
+			<if test="verify_content != null">verify_content,</if> 
+			<if test="verify_time != null">verify_time,</if> 
+			<if test="reason != null">reason,</if> 
+			<if test="start_time != null">start_time,</if> 
+			<if test="end_time != null">end_time,</if> 
+			<if test="is_notify != null">is_notify,</if> 
+			<if test="creator_id != null">creator_id,</if> 
+			<if test="create_time != null">create_time,</if> 
+		</trim>
+		<![CDATA[) values (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">#{id},</if> 
+			<if test="staff_id != null">#{staff_id},</if> 
+			<if test="type != null">#{type},</if> 
+			<if test="verify_user_id != null">#{verify_user_id},</if> 
+			<if test="verify_state != null">#{verify_state},</if> 
+			<if test="verify_content != null">#{verify_content},</if> 
+			<if test="verify_time != null">#{verify_time},</if> 
+			<if test="reason != null">#{reason},</if> 
+			<if test="start_time != null">#{start_time},</if> 
+			<if test="end_time != null">#{end_time},</if> 
+			<if test="is_notify != null">#{is_notify},</if> 
+			<if test="creator_id != null">#{creator_id},</if> 
+			<if test="create_time != null">#{create_time},</if> 
+		</trim>
+		<![CDATA[)]]>
+	</insert>
+
+	<update id="updateLeave" parameterType="Leave">
+		update leave_info
+		<set>
+			<if test="staff_id != null">staff_id=#{staff_id},</if>
+			<if test="type != null">type=#{type},</if>
+			<if test="verify_user_id != null">verify_user_id=#{verify_user_id},</if>
+			<if test="verify_state != null">verify_state=#{verify_state},</if>
+			<if test="verify_content != null">verify_content=#{verify_content},</if>
+			<if test="verify_time != null">verify_time=#{verify_time},</if>
+			<if test="reason != null">reason=#{reason},</if>
+			<if test="start_time != null">start_time=#{start_time},</if>
+			<if test="end_time != null">end_time=#{end_time},</if>
+			<if test="is_notify != null">is_notify=#{is_notify},</if>
+			<if test="creator_id != null">creator_id=#{creator_id},</if>
+			<if test="create_time != null">create_time=#{create_time},</if>
+		</set>
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</update>
+	
+	<delete id="deleteLeave" parameterType="Leave">
+		delete from leave_info
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</delete>
+</mapper>

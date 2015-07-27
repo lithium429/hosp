@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="entity.ForumPlate">  
+	<resultMap id="forumPlateResult" type="ForumPlate">
+		<result column="id" property="id" jdbcType="DECIMAL" />
+		<result column="parent_id" property="parent_id" jdbcType="DECIMAL" />
+		<result column="parent_name" property="parent_name" jdbcType="VARCHAR" />
+		<result column="name" property="name" jdbcType="VARCHAR" />
+		<result column="sort" property="sort" jdbcType="DECIMAL" />
+		<result column="icon_url" property="icon_url" jdbcType="VARCHAR" />
+		<result column="layer" property="layer" jdbcType="DECIMAL" />
+		<result column="is_leaf" property="is_leaf" jdbcType="VARCHAR" />
+		<result column="thread_count" property="thread_count" jdbcType="DECIMAL" />
+		<result column="post_count" property="post_count" jdbcType="DECIMAL" />
+		<result column="last_thread_id" property="last_thread_id" jdbcType="DECIMAL" />
+		<result column="last_post_time" property="last_post_time" jdbcType="TIMESTAMP" />
+		<collection property="users" resultMap="entity.ForumPlateUser.forumPlateUserResult"></collection>
+    </resultMap>
+
+	<sql id="sf-forumPlate">
+		<where>
+			<if test="id != null">
+				and a.id = #{id}
+			</if>
+			<if test="parent_id != null">
+				and a.parent_id = #{parent_id}
+			</if>
+			<if test="name != null">
+		     a.name = #{name}
+			</if>
+			<if test="sort != null">
+				and a.sort = #{sort}
+			</if>
+			<if test="icon_url != null">
+				and a.icon_url = #{icon_url}
+			</if>
+			<if test="layer != null">
+				and a.layer = #{layer}
+			</if>
+			<if test="is_leaf != null">
+				and a.is_leaf = #{is_leaf}
+			</if>
+			<if test="map.keyword != null">
+				and a.keyword like concat('%',#{map.keyword},'%')
+			</if>
+			<if test="map.ids != null">
+				and a.id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+		<if test="map.sort != null">
+			order by a.sort
+		</if>
+	</sql>
+
+	<select id="selectForumPlate" resultMap="forumPlateResult" parameterType="ForumPlate">
+		select a.*,b.name as parent_name,c.id as aid,c.user_id,c.plate_id,d.real_name as user_real_name from forum_plate a 
+		left join forum_plate b on a.parent_id = b.id
+		left join forum_plate_user c on a.id = c.plate_id
+		left join user d on c.user_id = d.id
+		
+		<include refid="sf-forumPlate" />
+	</select>
+	
+	<select id="selectForumPlateForParent" resultMap="forumPlateResult" parameterType="ForumPlate">
+		select a.*,b. from forum_plate a left join b on a.parent_id = b.id
+		<include refid="sf-forumPlate" />
+	</select>
+	
+	<select id="selectForumPlateSort" resultType="int" parameterType="ForumPlate">
+		select max(a.sort) + 1 from forum_plate a 
+		<include refid="sf-forumPlate" />
+	</select>
+	
+	<select id="selectForumPlateList" resultMap="forumPlateResult" parameterType="ForumPlate">
+		select a.*,b.user_id,c.real_name as user_real_name from forum_plate a left join forum_plate_user b on a.id = b.plate_id
+		left join user c on b.user_id = c.id
+		<include refid="sf-forumPlate" /> 
+	</select>
+	
+	<select id="selectForumPlateCount" resultType="int" parameterType="ForumPlate">
+		select count(1) from forum_plate a
+		<include refid="sf-forumPlate" />
+	</select>
+	
+	<select id="selectForumPlatePageList" resultType="ForumPlate" parameterType="ForumPlate">
+		select a.* from forum_plate a
+		<include refid="sf-forumPlate" />
+		limit #{map.startIndex},#{map.pageSize}
+	</select>
+
+	<insert id="insertForumPlate" parameterType="ForumPlate" useGeneratedKeys="true"
+		keyProperty="id"> 
+		<![CDATA[insert into forum_plate (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">id,</if> 
+			<if test="parent_id != null">parent_id,</if> 
+			<if test="name != null">name,</if> 
+			<if test="sort != null">sort,</if> 
+			<if test="icon_url != null">icon_url,</if> 
+			<if test="layer != null">layer,</if> 
+			<if test="is_leaf != null">is_leaf,</if> 
+		</trim>
+		<![CDATA[) values (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">#{id},</if> 
+			<if test="parent_id != null">#{parent_id},</if> 
+			<if test="name != null">#{name},</if> 
+			<if test="sort != null">#{sort},</if> 
+			<if test="icon_url != null">#{icon_url},</if> 
+			<if test="layer != null">#{layer},</if> 
+			<if test="is_leaf != null">#{is_leaf},</if> 
+		</trim>
+		<![CDATA[)]]>
+	</insert>
+
+	<update id="updateForumPlate" parameterType="ForumPlate">
+		update forum_plate
+		<set>
+			<if test="parent_id != null">parent_id=#{parent_id},</if>
+			<if test="name != null">name=#{name},</if>
+			<if test="sort != null">sort=#{sort},</if>
+			<if test="icon_url != null">icon_url=#{icon_url},</if>
+			<if test="layer != null">layer=#{layer},</if>
+			<if test="is_leaf != null">is_leaf=#{is_leaf},</if>
+			<if test="thread_count != null">thread_count=#{thread_count},</if>
+			<if test="post_count != null">post_count=#{post_count},</if>
+			<if test="last_thread_id != null">last_thread_id=#{last_thread_id},</if>
+			<if test="last_post_time != null">last_post_time=#{last_post_time},</if>
+		</set>
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</update>
+	
+	<update id="updateForumPlateCount" parameterType="ForumPlate">
+		update forum_plate a set thread_count = (select count(1) from forum_thread where plate_id = a.id and is_delete = 0),
+		post_count = (select count(1) from forum_post b left join forum_thread c on b.thread_id = c.id where b.plate_id = a.id and c.is_delete = 0)
+		<where>
+			<if test="id != null">
+				and a.id = #{id}
+			</if> 
+		</where>
+	</update>
+	
+	<update id="updateForumPlateLastInfo" parameterType="ForumPlate">
+		update forum_plate a set thread_count = (select count(1) from forum_thread where plate_id = a.id and is_delete = 0),
+		post_count = (select count(1) from forum_post b left join forum_thread c on b.thread_id = c.id where b.plate_id = a.id and c.is_delete = 0),
+		last_thread_id = (select id from forum_thread where plate_id = a.id and is_delete = 0 order by last_post_time desc limit 0,1),
+		last_post_time = (select last_post_time from forum_thread where plate_id = a.id and is_delete = 0 order by last_post_time desc limit 0,1)
+		<where>
+			<if test="id != null">
+				and a.id = #{id}
+			</if> 
+		</where>
+	</update>
+	
+	<delete id="deleteForumPlate" parameterType="ForumPlate">
+		delete from forum_plate 
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</delete>
+</mapper>

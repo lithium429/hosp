@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="entity.StaffContractFile">  
+	<resultMap id="staffContractFileResult" type="StaffContractFile">
+		<result column="scf_id" property="id" jdbcType="DECIMAL" />
+		<result column="scf_contract_id" property="contract_id" jdbcType="DECIMAL" />
+		<result column="scf_type" property="type" jdbcType="DECIMAL" />
+		<result column="scf_file_id" property="file_id" jdbcType="DECIMAL" />
+		<result column="scf_url" property="url" jdbcType="VARCHAR" />
+		<result column="scf_name" property="name" jdbcType="VARCHAR" />
+		<result column="scf_sort" property="sort" jdbcType="DECIMAL" />
+		<result column="scf_create_time" property="create_time"  />
+    </resultMap>
+
+	<sql id="sf-staffContractFile">
+		<where>
+			<if test="id != null">
+				and a.id = #{id}
+			</if>
+			<if test="contract_id != null">
+				and a.contract_id = #{contract_id}
+			</if>
+			<if test="type != null">
+				and a.type = #{type}
+			</if>
+			<if test="file_id != null">
+				and a.file_id = #{file_id}
+			</if>
+			<if test="url != null">
+				and a.url = #{url}
+			</if>
+			<if test="name != null">
+				and a.name = #{name}
+			</if>
+			<if test="sort != null">
+				and a.sort = #{sort}
+			</if>
+			<if test="create_time != null">
+				and a.create_time = #{create_time}
+			</if>
+			<if test="map.keyword != null">
+				and a.keyword like concat('%',#{map.keyword},'%')
+			</if>
+			<if test="map.ids != null">
+				and a.id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+		<if test="map.sort != null">
+			order by a.id desc
+		</if>
+	</sql>
+
+	<select id="selectStaffContractFile" resultType="StaffContractFile" parameterType="StaffContractFile">
+		select a.* from staff_contract_file a
+		<include refid="sf-staffContractFile" />
+	</select>
+	
+	<select id="selectStaffContractFileList" resultType="StaffContractFile" parameterType="StaffContractFile">
+		select a.* from staff_contract_file a
+		<include refid="sf-staffContractFile" />
+	</select>
+	
+	<select id="selectStaffContractFileCount" resultType="int" parameterType="StaffContractFile">
+		select count(1) from staff_contract_file a
+		<include refid="sf-staffContractFile" />
+	</select>
+	
+	<select id="selectStaffContractFilePageList" resultType="StaffContractFile" parameterType="StaffContractFile">
+		select a.* from staff_contract_file a
+		<include refid="sf-staffContractFile" />
+		limit #{map.startIndex},#{map.pageSize}
+	</select>
+	
+	<select id="selectStaffContractFileSort" resultType="int" parameterType="StaffContractFile">
+		select max(a.id) from staff_contract_file a
+		<include refid="sf-staffContractFile" />
+	</select>
+
+	<insert id="insertStaffContractFile" parameterType="StaffContractFile" useGeneratedKeys="true"
+		keyProperty="id"> 
+		<![CDATA[insert into staff_contract_file (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">id,</if> 
+			<if test="contract_id != null">contract_id,</if> 
+			<if test="type != null">type,</if> 
+			<if test="file_id != null">file_id,</if> 
+			<if test="url != null">url,</if> 
+			<if test="name != null">name,</if> 
+			<if test="sort != null">sort,</if> 
+			<if test="create_time != null">create_time,</if> 
+		</trim>
+		<![CDATA[) values (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">#{id},</if> 
+			<if test="contract_id != null">#{contract_id},</if> 
+			<if test="type != null">#{type},</if> 
+			<if test="file_id != null">#{file_id},</if> 
+			<if test="url != null">#{url},</if> 
+			<if test="name != null">#{name},</if> 
+			<if test="sort != null">#{sort},</if> 
+			<if test="create_time != null">#{create_time},</if> 
+		</trim>
+		<![CDATA[)]]>
+	</insert>
+
+	<update id="updateStaffContractFile" parameterType="StaffContractFile">
+		update staff_contract_file
+		<set>
+			<if test="contract_id != null">contract_id=#{contract_id},</if>
+			<if test="type != null">type=#{type},</if>
+			<if test="file_id != null">file_id=#{file_id},</if>
+			<if test="url != null">url=#{url},</if>
+			<if test="name != null">name=#{name},</if>
+			<if test="sort != null">sort=#{sort},</if>
+			<if test="create_time != null">create_time=#{create_time},</if>
+		</set>
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</update>
+	
+	<delete id="deleteStaffContractFile" parameterType="StaffContractFile">
+		delete from staff_contract_file 
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="contract_id != null">
+				and contract_id = #{contract_id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</delete>
+</mapper>

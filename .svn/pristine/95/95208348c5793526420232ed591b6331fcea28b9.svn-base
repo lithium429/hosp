@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="entity.Announcement">  
+	<resultMap id="announcementResult" type="Announcement">
+		<result column="id" property="id" jdbcType="DECIMAL" />
+		<result column="type_id" property="type_id" jdbcType="DECIMAL" />
+		<result column="title" property="title" jdbcType="VARCHAR" />
+		<result column="content" property="content" jdbcType="VARCHAR" />
+		<result column="valid_date" property="valid_date"  />
+		<result column="end_date" property="end_date"  />
+		<result column="sort" property="sort" jdbcType="DECIMAL" />
+		<result column="state" property="state" jdbcType="DECIMAL" />
+		<result column="is_show_all" property="is_show_all" jdbcType="VARCHAR" />
+		<result column="creator_id" property="creator_id" jdbcType="DECIMAL" />
+		<result column="create_time" property="create_time"  />
+    </resultMap>
+
+	<resultMap id="announcementResult—more" type="Announcement" extends="announcementResult">
+		<result column="type_name" property="type_name" jdbcType="DECIMAL" />
+		<collection property="depts" resultMap="announcementDeptResult" />
+		<collection property="files" resultMap="entity.AnnouncementFile.announcementFileResult" />
+    </resultMap>
+    
+	<resultMap id="announcementDeptResult" type="AnnouncementDept">
+		<result column="mid_id" property="id" jdbcType="DECIMAL" />
+		<result column="announcement_id" property="announcement_id" jdbcType="DECIMAL" />
+		<result column="dept_id" property="dept_id" jdbcType="DECIMAL" />
+		<result column="dept_name" property="dept_name" jdbcType="DECIMAL" />
+    </resultMap>
+    
+	<sql id="sf-announcement">
+		<where>
+			<if test="id != null">
+				and a.id = #{id}
+			</if>
+			<if test="type_id != null">
+				and a.type_id = #{type_id}
+			</if>
+			<if test="title != null">
+				and a.title = #{title}
+			</if>
+			<if test="content != null">
+				and a.content = #{content}
+			</if>
+			<if test="valid_date != null">
+				and a.valid_date = #{valid_date}
+			</if>
+			<if test="end_date != null">
+				and a.end_date = #{end_date}
+			</if>
+			<if test="sort != null">
+				and a.sort = #{sort}
+			</if>
+			<if test="state != null">
+				and a.state = #{state}
+			</if>
+			<if test="is_show_all != null">
+				and a.is_show_all = #{is_show_all}
+			</if>
+			<if test="creator_id != null">
+				and a.creator_id = #{creator_id}
+			</if>
+			<if test="create_time != null">
+				and a.create_time = #{create_time}
+			</if>
+			<if test="map.state != null">
+				<choose>
+					<when test="map.state == 1">
+					and a.valid_date > #{map.now_date}
+					</when>
+					<when test="map.state == 2">
+					and #{map.now_date} >= a.valid_date and (a.end_date is null or a.end_date >= #{map.now_date})
+					</when>
+					<when test="map.state == 3">
+					and  #{map.now_date} > a.end_date
+					</when>
+				</choose>
+			</if>
+			<if test="map.keyword != null">
+				and (a.title like concat('%',#{map.keyword},'%') or a.content like concat('%',#{map.keyword},'%'))
+			</if>
+			<if test="map.dept_ids != null">
+				and (a.is_show_all=1 or b.dept_id in
+				<foreach collection="map.dept_ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>)
+			</if>
+			<if test="map.dept_id != null">
+				and (a.is_show_all=1 or b.dept_id = #{map.dept_id})
+			</if>
+			<if test="map.valid_date_min != null">
+				and a.valid_date >= #{map.valid_date_min}
+			</if>
+			<if test="map.valid_date_max != null">
+				and #{map.valid_date_max} >= a.valid_date
+			</if>
+			<if test="map.create_time_min != null">
+				and a.create_time >= #{map.create_time_min}
+			</if>
+			<if test="map.create_time_max != null">
+				and #{map.create_time_max} >= a.create_time
+			</if>
+			<if test="map.end_date_min != null">
+				and (a.end_date is null or a.end_date >= #{map.end_date_min})
+			</if>
+			<if test="map.end_date_max != null">
+				and (a.end_date is null or #{map.end_date_max} >= a.end_date)
+			</if>
+			<if test="map.title_valid != null">
+				and a.id !=#{map.id} and a.title =#{map.title}
+			</if>
+			<if test="map.ids != null">
+				and a.id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if><!-- 向下移动 -->
+			<if test="map.sort_max != null">
+				and #{map.sort_max} > a.sort
+			</if><!-- 向上移动 -->
+			<if test="map.sort_min != null">
+				and a.sort > #{map.sort_min}
+			</if>
+		</where>
+	</sql>
+    
+	<sql id="sf-announcement-order">
+		<include refid="sf-announcement" />
+		<if test="map.sort_order_desc != null">
+			order by a.sort desc
+		</if>
+		<if test="map.sort_order_asc != null">
+			order by a.sort
+		</if>
+	</sql>
+	
+	<sql id="sf-announcement-order_ow">
+		<if test="map.sort_order_desc != null">
+			order by t.sort desc
+		</if>
+		<if test="map.sort_order_asc != null">
+			order by t.sort
+		</if>
+	</sql>
+	
+	<select id="selectAnnouncement" resultMap="announcementResult—more" parameterType="Announcement">
+		select a.*,b.dept_id,b.announcement_id,b.id as mid_id,c.name as dept_name,
+		g.announcement_id as af_announcement_id, g.type as af_type, g.file_id as af_file_id,g.create_time as af_create_time,
+		case when g.type = '3' then h.url else g.url end as af_url,
+		case when g.type = '3' then h.name else g.name end as af_name, 
+		g.sort as af_sort,g.id as af_id,d.name as type_name from announcement a 
+		left join announcement_dept b on a.id=b.announcement_id 
+		left join department c on b.dept_id=c.id left join announcement_type d on a.type_id=d.id 
+		left join announcement_file g on a.id = g.announcement_id
+		left join file h on g.file_id = h.id and g.type = 3
+		<include refid="sf-announcement" />
+	</select>
+
+	<select id="selectAnnouncementToSort" resultType="Announcement" parameterType="Announcement">
+		select a.*,b.dept_id,b.announcement_id,b.id as mid_id,c.name as dept_name,d.name as type_name from announcement a left join announcement_dept b on a.id=b.announcement_id 
+		left join department c on b.dept_id=c.id left join announcement_type d on a.type_id=d.id 
+		<include refid="sf-announcement-order" />
+		limit 0,1
+	</select>
+	
+	<select id="selectAnnouncementList" resultMap="announcementResult—more" parameterType="Announcement">
+		select a.*,b.dept_id,b.announcement_id,b.id as mid_id,c.name as dept_name,d.name as type_name from announcement a left join announcement_dept b on a.id=b.announcement_id 
+		left join department c on b.dept_id=c.id left join announcement_type d on a.type_id=d.id 
+		<include refid="sf-announcement-order" />
+	</select>
+	
+	<select id="selectAnnouncementCount" resultType="int" parameterType="Announcement">
+		select count(1) from (select count(1) from announcement a left join announcement_dept b on a.id=b.announcement_id 
+		<include refid="sf-announcement" />
+		group by a.id) as t
+	</select>
+	
+	<select id="selectAnnouncementPageList" resultMap="announcementResult—more" parameterType="Announcement">
+		select a.*,b.dept_id,b.announcement_id,b.id as mid_id,c.name as dept_name from(select * from (select a.*,d.name as type_name from announcement a left join announcement_dept b on a.id=b.announcement_id 
+		left join department c on b.dept_id=c.id left join announcement_type d on a.type_id=d.id 
+		<include refid="sf-announcement" /> group by a.id) as t <include refid="sf-announcement-order_ow" />
+		limit #{map.startIndex},#{map.pageSize}) as a left join announcement_dept b on a.id=b.announcement_id left join department c on b.dept_id=c.id
+	</select>
+	
+	<select id="selectAnnouncementSort" resultType="int" parameterType="Announcement">
+		select max(a.sort) from announcement a
+		<include refid="sf-announcement" />
+	</select>
+
+	<insert id="insertAnnouncement" parameterType="Announcement" useGeneratedKeys="true"
+		keyProperty="id"> 
+		<![CDATA[insert into announcement (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">id,</if> 
+			<if test="type_id != null">type_id,</if> 
+			<if test="title != null">title,</if> 
+			<if test="content != null">content,</if> 
+			<if test="valid_date != null">valid_date,</if> 
+			<if test="end_date != null">end_date,</if> 
+			<if test="sort != null">sort,</if> 
+			<if test="state != null">state,</if> 
+			<if test="is_show_all != null">is_show_all,</if> 
+			<if test="creator_id != null">creator_id,</if> 
+			<if test="create_time != null">create_time,</if> 
+		</trim>
+		<![CDATA[) values (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">#{id},</if> 
+			<if test="type_id != null">#{type_id},</if> 
+			<if test="title != null">#{title},</if> 
+			<if test="content != null">#{content},</if> 
+			<if test="valid_date != null">#{valid_date},</if> 
+			<if test="end_date != null">#{end_date},</if> 
+			<if test="sort != null">#{sort},</if> 
+			<if test="state != null">#{state},</if> 
+			<if test="is_show_all != null">#{is_show_all},</if> 
+			<if test="creator_id != null">#{creator_id},</if> 
+			<if test="create_time != null">#{create_time},</if> 
+		</trim>
+		<![CDATA[)]]>
+	</insert>
+
+	<update id="updateAnnouncement" parameterType="Announcement">
+		update announcement
+		<set>
+			<if test="type_id != null">type_id=#{type_id},</if>
+			<if test="title != null">title=#{title},</if>
+			<if test="content != null">content=#{content},</if>
+			<if test="valid_date != null">valid_date=#{valid_date},</if>
+			<if test="end_date != null">end_date=#{end_date},</if>
+			<if test="map.end_date_null != null">end_date=null,</if>
+			<if test="sort != null">sort=#{sort},</if>
+			<if test="state != null">state=#{state},</if>
+			<if test="is_show_all != null">is_show_all=#{is_show_all},</if>
+			<if test="creator_id != null">creator_id=#{creator_id},</if>
+			<if test="create_time != null">create_time=#{create_time},</if>
+		</set>
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="map.sort != null">
+				and sort = #{map.sort}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</update>
+	
+	<delete id="deleteAnnouncement" parameterType="Announcement">
+		delete from announcement 
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</delete>
+</mapper>

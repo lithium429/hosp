@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="entity.File">  
+	<resultMap id="fileResult" type="File">
+		<result column="id" property="id" jdbcType="DECIMAL" />
+		<result column="name" property="name" jdbcType="VARCHAR" />
+		<result column="url" property="url" jdbcType="VARCHAR" />
+		<result column="type" property="type" jdbcType="DECIMAL" />
+		<result column="extension" property="extension" jdbcType="VARCHAR" />
+		<result column="info" property="info" jdbcType="VARCHAR" />
+		<result column="module_type" property="module_type" jdbcType="DECIMAL" />
+		<result column="size" property="size" jdbcType="DECIMAL" />
+		<result column="is_delete" property="is_delete" jdbcType="VARCHAR" />
+		<result column="directory_id" property="directory_id" jdbcType="DECIMAL" />
+		<result column="creator_id" property="creator_id" jdbcType="DECIMAL" />
+		<result column="creator_name" property="creator_name" jdbcType="VARCHAR" />
+		<result column="create_time" property="create_time" jdbcType="TIMESTAMP" />
+		<result column="dept_name" property="dept_name" jdbcType="VARCHAR" />
+		<collection property="users" resultMap="entity.FileUser.fileUserResult"></collection>
+    </resultMap>
+    
+    <resultMap id="fileUsersResult" type="File">
+		<result column="fid" property="id" jdbcType="DECIMAL" />
+		<collection property="users" resultMap="entity.FileUser.fileUserResult"></collection>
+    </resultMap>
+    
+
+	<sql id="sf-file">
+		<where>
+			<if test="id != null">
+				and a.id = #{id}
+			</if>
+			<if test="name != null">
+				and a.name = #{name}
+			</if>
+			<if test="url != null">
+				and a.url = #{url}
+			</if>
+			<if test="type != null">
+				and a.type = #{type}
+			</if>
+			<if test="extension != null">
+				and a.extension = #{extension}
+			</if>
+			<if test="info != null">
+				and a.info = #{info}
+			</if>
+			<if test="module_type != null">
+				and a.module_type = #{module_type}
+			</if>
+			<if test="size != null">
+				and a.size = #{size}
+			</if>
+			<if test="is_delete != null">
+				and a.is_delete = #{is_delete}
+			</if>
+			<if test="directory_id != null">
+				and a.directory_id = #{directory_id}
+			</if>
+			<if test="creator_id != null">
+				and a.creator_id = #{creator_id}
+			</if> 
+			<if test="map.name != null">
+				and a.name like concat('%',#{map.name},'%')
+			</if>
+			<if test="map.is_delete != null">
+				and a.is_delete = #{map.is_delete}
+			</if>
+			<if test="map.min_create_time != null">
+				and a.create_time &gt; #{map.min_create_time}
+			</if>
+			<if test="map.max_create_time != null">
+				and a.create_time &lt; #{map.max_create_time}
+			</if> 
+			<if test="map.dept_id != null">
+				and c.dept_id = #{map.dept_id}
+			</if>
+			<if test="map.creator_name != null">
+				and c.name like concat('%',#{map.creator_name},'%')
+			</if>
+			<if test="map.current_user_id != null">
+				and a.creator_id = #{map.current_user_id} or e.user_id = #{map.current_user_id} 
+			</if>
+			<if test="map.types != null">
+				and a.type in
+				<foreach collection="map.types" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+			<if test="map.ids != null">
+				and a.id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+			<if test="map.not_ids != null">
+				and a.id not in
+				<foreach collection="map.not_ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+		<if test="map.sort != null">
+			order by a.id desc
+		</if>
+	</sql>
+
+	<select id="selectFile" resultType="File" parameterType="File">
+		select a.* from file a 
+		<include refid="sf-file" />
+	</select>
+	
+	<select id="selectFileUsers" resultMap="fileUsersResult" parameterType="File">
+		select a.id as fid, b.*, c.real_name as user_name from file a left join file_user b on a.id = b.file_id left join user c on b.user_id = c.id
+		<include refid="sf-file" />
+	</select>
+	
+	<select id="selectFileList" resultType="File" parameterType="File">
+		select a.* from file a
+		<include refid="sf-file" />
+	</select>
+	
+	<select id="selectFileCount" resultType="int" parameterType="File">
+		select count(1) from file a left join directory b on a.directory_id = b.id
+		<include refid="sf-file" />
+	</select>
+	
+	<select id="selectFilePageList" resultType="File" parameterType="File">
+		select a.* from file a left join directory b on a.directory_id = b.id
+		<include refid="sf-file" />
+		limit #{map.startIndex},#{map.pageSize}
+	</select>
+	
+	<select id="selectFileCountSummary" resultType="int" parameterType="File">
+		select count(1) from (select count(1) from file a left join directory b on a.directory_id = b.id left join user c on a.creator_id = c.id left join department d on c.dept_id = d.id 
+		left join file_user e on a.id = e.file_id
+		<include refid="sf-file" /> group by a.id) as t
+	</select>
+	
+	<select id="selectFilePageListSummary" resultMap="fileResult" parameterType="File">
+		select tp.*,e.* from ( select t.* from(select a.*,c.real_name as creator_name,d.name as dept_name from file a 
+			left join directory b on a.directory_id = b.id left join user c on a.creator_id = c.id 
+			left join department d on c.dept_id = d.id left join file_user e on a.id = e.file_id
+			<include refid="sf-file" /> group by a.id) as t order by t.id desc
+			limit #{map.startIndex},#{map.pageSize}) 
+		as tp left join file_user e on tp.id = e.file_id
+	</select>
+
+	<insert id="insertFile" parameterType="File" useGeneratedKeys="true"
+		keyProperty="id"> 
+		<![CDATA[insert into file (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">id,</if> 
+			<if test="name != null">name,</if> 
+			<if test="url != null">url,</if> 
+			<if test="type != null">type,</if> 
+			<if test="extension != null">extension,</if> 
+			<if test="info != null">info,</if> 
+			<if test="module_type != null">module_type,</if> 
+			<if test="size != null">size,</if> 
+			<if test="is_delete != null">is_delete,</if>
+			<if test="directory_id != null">directory_id,</if> 
+			<if test="creator_id != null">creator_id,</if> 
+			<if test="create_time != null">create_time,</if> 
+		</trim>
+		<![CDATA[) values (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">#{id},</if> 
+			<if test="name != null">#{name},</if> 
+			<if test="url != null">#{url},</if> 
+			<if test="type != null">#{type},</if> 
+			<if test="extension != null">#{extension},</if> 
+			<if test="info != null">#{info},</if> 
+			<if test="module_type != null">#{module_type},</if> 
+			<if test="size != null">#{size},</if> 
+			<if test="is_delete != null">#{is_delete},</if>
+			<if test="directory_id != null">#{directory_id},</if> 
+			<if test="creator_id != null">#{creator_id},</if> 
+			<if test="create_time != null">#{create_time},</if> 
+		</trim>
+		<![CDATA[)]]>
+	</insert>
+
+	<update id="updateFile" parameterType="File">
+		update file
+		<set>
+			<if test="name != null">name=#{name},</if>
+			<if test="url != null">url=#{url},</if>
+			<if test="type != null">type=#{type},</if>
+			<if test="extension != null">extension=#{extension},</if>
+			<if test="info != null">info=#{info},</if>
+			<if test="module_type != null">module_type=#{module_type},</if>
+			<if test="size != null">size=#{size},</if>
+			<if test="is_delete != null">is_delete=#{is_delete},</if>
+			<if test="directory_id != null">directory_id=#{directory_id},</if>
+			<if test="creator_id != null">creator_id=#{creator_id},</if>
+			<if test="create_time != null">create_time=#{create_time},</if>
+		</set>
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</update>
+	
+	<delete id="deleteFile" parameterType="File">
+		delete from file
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="directory_id != null">
+				and directory_id = #{directory_id}
+			</if>
+			<if test="map.directory_ids != null">
+				and directory_id in
+				<foreach collection="map.directory_ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</delete>
+</mapper>

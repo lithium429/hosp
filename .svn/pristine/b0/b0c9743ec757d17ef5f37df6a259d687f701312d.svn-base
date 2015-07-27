@@ -1,0 +1,368 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="entity.Meeting">  
+	<resultMap id="meetingResult" type="Meeting">
+		<result column="id" property="id" jdbcType="DECIMAL" />
+		<result column="subject" property="subject" jdbcType="VARCHAR" />
+		<result column="holder" property="holder" jdbcType="VARCHAR" />
+		<result column="room_id" property="room_id" jdbcType="DECIMAL" />
+		<result column="begin_time" property="begin_time"  />
+		<result column="end_time" property="end_time"  />
+		<result column="content" property="content" jdbcType="VARCHAR" />
+		<result column="state" property="state" jdbcType="DECIMAL" />
+		<result column="verify_state" property="verify_state" jdbcType="DECIMAL" />
+		<result column="is_send_umsg" property="is_send_umsg" jdbcType="VARCHAR" />
+		<result column="is_send_smsg" property="is_send_smsg" jdbcType="VARCHAR" />
+		<result column="is_sended" property="is_sended" jdbcType="VARCHAR" />
+		<result column="creator_id" property="creator_id" jdbcType="DECIMAL" />
+		<result column="create_time" property="create_time"  />
+		<result column="remind_time" property="remind_time"  jdbcType="DECIMAL" />
+		<result column="verify_user_id" property="verify_user_id" jdbcType="DECIMAL" />
+		<result column="verify_time" property="verify_time"   />
+		<result column="verify_content" property="verify_content" jdbcType="VARCHAR" />
+    </resultMap>
+    
+    <resultMap id="meetingResult_file" type="Meeting" extends="meetingResult">
+		<result column="room_name" property="room_name" jdbcType="VARCHAR" />
+		<collection property="files" resultMap="meetingFileResult" />
+    </resultMap>
+    
+    <resultMap id="meetingResult_file_user" type="Meeting" extends="meetingResult">
+		<result column="verify_user_name" property="verify_user_name" jdbcType="VARCHAR" />
+		<result column="room_name" property="room_name" jdbcType="VARCHAR" />
+		<result column="creator_real_name" property="creator_real_name" jdbcType="VARCHAR" />
+		<collection property="users" resultMap="meetingUserResult" />
+    </resultMap>
+    
+    <resultMap id="meetingResult_more" type="Meeting" extends="meetingResult">
+		<result column="verify_user_name" property="verify_user_name" jdbcType="VARCHAR" />
+		<result column="room_name" property="room_name" jdbcType="VARCHAR" />
+		<result column="creator_real_name" property="creator_real_name" jdbcType="VARCHAR" />
+		<collection property="users" resultMap="meetingUserResult" />
+		<collection property="verifys" resultMap="meetingVerifyRecordResult" />
+		<collection property="files" resultMap="entity.MeetingFile.meetingFileResult" />
+    </resultMap>
+    
+      <resultMap id="meetingForNotifyResult" type="Meeting" extends="meetingResult">
+		<result column="room_name" property="room_name" jdbcType="VARCHAR" />
+		<result column="creator_real_name" property="creator_real_name" jdbcType="VARCHAR" />
+		<collection property="users" resultMap="meetingUserForNotifyResult" />
+    </resultMap>
+     
+    <resultMap id="meetingUserResult" type="MeetingUser">
+		<result column="id2" property="id" jdbcType="DECIMAL" />
+		<result column="user_id" property="user_id" jdbcType="DECIMAL" />
+		<result column="user_name" property="user_name" jdbcType="VARCHAR" /><!-- 真实姓名 -->
+    </resultMap> 
+    
+    <resultMap id="meetingUserForNotifyResult" type="MeetingUser"> 
+		<result column="user_mobile" property="user_mobile" jdbcType="VARCHAR" /><!-- 真实姓名 -->
+    </resultMap> 
+    
+    <resultMap id="meetingVerifyRecordResult" type="MeetingVerifyRecord">
+		<result column="id3" property="id" jdbcType="DECIMAL" />
+		<result column="meeting_vstate" property="meeting_vstate" jdbcType="DECIMAL" />
+		<result column="content3" property="content" jdbcType="VARCHAR" />
+		<result column="creator_id" property="creator_id" jdbcType="DECIMAL" />
+		<result column="vcreator_name" property="creator_name" jdbcType="VARCHAR" />
+		<result column="create_time2" property="create_time"  />
+    </resultMap>
+
+	<sql id="sf-meeting">
+		<where>
+			<if test="id != null">
+				and a.id = #{id}
+			</if>
+			<if test="subject != null">
+				and a.subject = #{subject}
+			</if>
+			<if test="holder != null">
+				and a.holder = #{holder}
+			</if>
+			<if test="remind_time != null">
+				and a.remind_time = #{remind_time}
+			</if>
+			<if test="room_id != null">
+				and a.room_id = #{room_id}
+			</if>
+			<if test="begin_time != null">
+				and a.begin_time = #{begin_time}
+			</if>
+			<if test="end_time != null">
+				and a.end_time = #{end_time}
+			</if>
+			<if test="content != null">
+				and a.content = #{content}
+			</if>
+			<if test="state != null">
+				and a.state = #{state}
+			</if>
+			<if test="verify_state != null">
+				and a.verify_state = #{verify_state}
+			</if>
+			<if test="is_send_umsg != null">
+				and a.is_send_umsg = #{is_send_umsg}
+			</if>
+			<if test="is_send_smsg != null">
+				and a.is_send_smsg = #{is_send_smsg}
+			</if>
+			<if test="is_sended != null">
+				and a.is_sended = #{is_sended}
+			</if>
+			<if test="creator_id != null">
+				and a.creator_id = #{creator_id}
+			</if>
+			<if test="create_time != null">
+				and a.create_time = #{create_time}
+			</if>
+			<if test="map.keyword != null">
+				and a.keyword like concat('%',#{map.keyword},'%')
+			</if>
+			<if test="map.subject != null">
+				and a.subject like concat('%',#{map.subject},'%')
+			</if>
+			<if test="map.holder != null">
+				and a.holder like concat('%',#{map.holder},'%')
+			</if>
+			<if test="map.begin_time_min != null">
+				and a.begin_time >= #{map.begin_time_min}
+			</if>
+			<if test="map.begin_time_max != null">
+				and #{map.begin_time_max} >= a.begin_time
+			</if>
+			<if test="map.end_time_min != null">
+				and a.end_time >= #{map.end_time_min}
+			</if>
+			<if test="map.end_time_max != null">
+				and #{map.end_time_max} >= a.end_time
+			</if>
+			<if test="map.subject_valid != null">
+				and a.id !=#{map.id} and a.subject =#{map.subject}
+			</if>
+			<if test="map.user_id != null">
+				and c.user_id = #{map.user_id}
+			</if>
+			<if test="map.verify_state_not != null">
+				and a.verify_state != #{map.verify_state_not}
+			</if>
+			<if test="map.notify_now != null">
+				and DATE_ADD(#{map.notify_now},INTERVAL a.remind_time HOUR) >= a.begin_time
+			</if>
+			<if test="map.state != null">
+				<choose>
+					<when test="map.state == 1">
+					and a.begin_time > #{map.now_date} and  a.state != 4
+					</when>
+					<when test="map.state == 2">
+					and #{map.now_date} >= a.begin_time and a.end_time >= #{map.now_date} and  a.state != 4
+					</when>
+					<when test="map.state == 3">
+					and  #{map.now_date} > a.end_time and  a.state != 4
+					</when>
+					<when test="map.state == 4">
+					and  a.state = ${map.state}
+					</when>
+				</choose>
+			</if>
+			<if test="map.judge_date != null">
+				and a.id !=#{map.id} 
+				and ((#{map.judge_date_min} >= a.begin_time and a.end_time >= #{map.judge_date_min}) 
+				or (#{map.judge_date_max} >= a.begin_time and a.end_time >= #{map.judge_date_max})
+				or (#{map.judge_date_max} >= a.end_time and a.begin_time >= #{map.judge_date_min}))
+			</if>
+			<if test="map.this_week != null">
+				<![CDATA[
+					and ((a.begin_time >= #{map.this_week_start} and a.begin_time <= #{map.this_week_end})
+					or (a.end_time >= #{map.this_week_start} and a.end_time <= #{map.this_week_end}))   
+					and a.end_time >= #{map.now_date} 
+					and a.state in (1,2)
+				]]>
+			</if>
+			<if test="map.seven_days != null">
+				<![CDATA[ 
+					and ((a.begin_time >= #{map.seven_days_start} and a.begin_time <= #{map.seven_days_end})
+					or (a.end_time >= #{map.seven_days_start} and a.end_time <= #{map.seven_days_end})) 
+					and a.end_time >= #{map.now_date} 
+					and a.state in (1,2)
+				]]>
+			</if>
+			<if test="map.verify_states != null">
+				and a.verify_state in
+				<foreach collection="map.verify_states" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+			<if test="map.ids != null">
+				and a.id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+		<if test="map.file_sort != null">
+			order by g.sort asc
+		</if>
+	</sql>
+
+	<sql id="sf-meeting-order">
+		<include refid="sf-meeting" />
+		<if test="map.sort != null">
+			order by a.id desc
+		</if>
+	</sql>
+	
+	<select id="selectMeeting" resultMap="meetingResult_more" parameterType="Meeting">
+		select a.*,j.real_name as verify_user_name,b.real_name as creator_real_name, c.id as id2,c.user_id,d.real_name as user_name,e.id as id3,e.meeting_vstate,
+		e.content as content3,e.creator_id,e.create_time as create_time2,f.name as creator_name,
+		g.meeting_id as mf_meeting_id, g.type as mf_type, g.file_id as mf_file_id,g.create_time as mf_create_time,
+		case when g.type = '3' then h.url else g.url end as mf_url,
+		case when g.type = '3' then h.name else g.name end as mf_name, 
+		g.sort as mf_sort,g.id as mf_id,i.name as room_name from meeting a 
+		left join user b on a.creator_id = b.id 
+		left join meeting_user c on a.id=c.meeting_id left join user d on c.user_id=d.id 
+		left join meeting_verify_record e on a.id=e.meeting_id left join user f on e.creator_id=f.id 
+		left join meeting_file g on a.id = g.meeting_id
+		left join file h on g.file_id = h.id and g.type = 3
+		left join meeting_room i on a.room_id = i.id
+		left join user j on a.verify_user_id=j.id
+		<include refid="sf-meeting" />
+	</select>
+	
+	<select id="selectMeetingList" resultType="Meeting" parameterType="Meeting">
+		select a.* from meeting a
+		<include refid="sf-meeting-order" />
+	</select>
+	
+	<select id="selectMeetingListForNotify" resultMap="meetingForNotifyResult" parameterType="Meeting">
+		select a.*,b.real_name as creator_real_name,d.mobile as user_mobile,e.name as room_name from meeting a left join user b on a.creator_id = b.id 
+		left join meeting_user c on a.id = c.meeting_id
+		left join user d on c.user_id = d.id 
+		left join meeting_room e on a.room_id = e.id 
+		<include refid="sf-meeting" />
+	</select>
+	
+	<select id="selectMeetingCount" resultType="int" parameterType="Meeting">
+		select count(1) from (select count(1) from meeting a left join meeting_user c on a.id=c.meeting_id
+		<include refid="sf-meeting" />
+		group by a.id) as t
+	</select>
+	
+	<select id="selectMeetingPageList" resultMap="meetingResult_file_user" parameterType="Meeting">
+		 select a.*,d.real_name as verify_user_name ,b.id as id1,b.meeting_id as meeting_id1,b.file_id,b.url,b.sort,b.create_time as create_time1,  
+		 e.real_name as creator_real_name from (select t.* from (select a.*,d.name as room_name
+		 from meeting a left join meeting_file b on a.id=b.meeting_id left join meeting_user c on a.id=c.meeting_id
+		 left join meeting_room d on a.room_id = d.id
+		<include refid="sf-meeting" /> group by a.id) as t order by t.id desc
+		limit #{map.startIndex},#{map.pageSize}) as a 
+		left join meeting_file b on a.id=b.meeting_id left join meeting_user c on a.id=c.meeting_id
+		left join user d on a.verify_user_id=d.id
+		left join user e on a.creator_id=e.id
+	</select>
+	
+	<select id="selectMeetingSort" resultType="int" parameterType="Meeting">
+		select max(a.id) from meeting a
+		<include refid="sf-meeting" />
+	</select>
+
+	<insert id="insertMeeting" parameterType="Meeting" useGeneratedKeys="true"
+		keyProperty="id"> 
+		<![CDATA[insert into meeting (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">id,</if> 
+			<if test="subject != null">subject,</if> 
+			<if test="holder != null">holder,</if> 
+			<if test="room_id != null">room_id,</if> 
+			<if test="begin_time != null">begin_time,</if> 
+			<if test="end_time != null">end_time,</if> 
+			<if test="content != null">content,</if> 
+			<if test="state != null">state,</if> 
+			<if test="verify_state != null">verify_state,</if> 
+			<if test="is_send_umsg != null">is_send_umsg,</if> 
+			<if test="is_send_smsg != null">is_send_smsg,</if> 
+			<if test="is_sended != null">is_sended,</if>
+			<if test="creator_id != null">creator_id,</if> 
+			<if test="create_time != null">create_time,</if> 
+			<if test="remind_time != null">remind_time,</if>
+			<if test="verify_user_id != null">verify_user_id,</if>
+			<if test="verify_time != null">verify_time,</if>
+			<if test="verify_content != null">verify_content,</if> 
+		</trim>
+		<![CDATA[) values (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">#{id},</if> 
+			<if test="subject != null">#{subject},</if> 
+			<if test="holder != null">#{holder},</if> 
+			<if test="room_id != null">#{room_id},</if> 
+			<if test="begin_time != null">#{begin_time},</if> 
+			<if test="end_time != null">#{end_time},</if> 
+			<if test="content != null">#{content},</if> 
+			<if test="state != null">#{state},</if> 
+			<if test="verify_state != null">#{verify_state},</if> 
+			<if test="is_send_umsg != null">#{is_send_umsg},</if> 
+			<if test="is_send_smsg != null">#{is_send_smsg},</if>
+			<if test="is_sended != null">#{is_sended},</if> 
+			<if test="creator_id != null">#{creator_id},</if> 
+			<if test="create_time != null">#{create_time},</if> 
+			<if test="remind_time != null">#{remind_time},</if> 
+			<if test="verify_user_id != null">#{verify_user_id},</if> 
+			<if test="verify_time != null">#{verify_time},</if> 
+			<if test="verify_content != null">#{verify_content},</if> 
+		</trim>
+		<![CDATA[)]]>
+	</insert>
+
+	<update id="updateMeeting" parameterType="Meeting">
+		update meeting
+		<set>
+			<if test="subject != null">subject=#{subject},</if>
+			<if test="holder != null">holder=#{holder},</if>
+			<if test="room_id != null">room_id=#{room_id},</if>
+			<if test="begin_time != null">begin_time=#{begin_time},</if>
+			<if test="end_time != null">end_time=#{end_time},</if>
+			<if test="content != null">content=#{content},</if>
+			<if test="state != null">state=#{state},</if>
+			<if test="verify_state != null">verify_state=#{verify_state},</if>
+			<if test="is_send_umsg != null">is_send_umsg=#{is_send_umsg},</if>
+			<if test="is_send_smsg != null">is_send_smsg=#{is_send_smsg},</if>
+			<if test="is_sended != null">is_sended=#{is_sended},</if>
+			<if test="creator_id != null">creator_id=#{creator_id},</if>
+			<if test="create_time != null">create_time=#{create_time},</if>
+			<if test="remind_time != null">remind_time=#{remind_time},</if>
+			<if test="verify_user_id != null">verify_user_id=#{verify_user_id},</if>
+			<if test="verify_time != null">verify_time=#{verify_time},</if>
+			<if test="verify_content != null">verify_content=#{verify_content},</if>
+		</set>
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</update>
+	
+	<delete id="deleteMeeting" parameterType="Meeting">
+		delete from meeting 
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</delete>
+</mapper>

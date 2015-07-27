@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="entity.StaffContract">  
+	<resultMap id="staffContractResult" type="StaffContract">
+		<result column="id" property="id" jdbcType="DECIMAL" />
+		<result column="staff_id" property="staff_id" jdbcType="DECIMAL" />
+		<result column="code" property="code" jdbcType="VARCHAR" />
+		<result column="type_id" property="type_id" jdbcType="DECIMAL" />
+		<result column="sign_date" property="sign_date"  />
+		<result column="valid_date" property="valid_date"  />
+		<result column="end_date" property="end_date"  />
+		<result column="relieve_date" property="relieve_date"  />
+		<result column="state" property="state" jdbcType="DECIMAL" />
+		<result column="remark" property="remark" jdbcType="VARCHAR" />
+		<result column="create_time" property="create_time"  />
+    </resultMap>
+    
+    <resultMap id="StaffContract_help" type="StaffContract" extends="staffContractResult">
+		<result column="name" property="name" jdbcType="VARCHAR" />
+		<result column="user_code" property="user_code" jdbcType="VARCHAR" />
+		<result column="type_name" property="type_name" jdbcType="VARCHAR" />
+		<collection property="files" resultMap="entity.StaffContractFile.staffContractFileResult" />
+    </resultMap>
+
+	<sql id="sf-staffContract">
+		<where>
+			<if test="id != null">
+				and a.id = #{id}
+			</if>
+			<if test="staff_id != null">
+				and a.staff_id = #{staff_id}
+			</if>
+			<if test="code != null">
+				and a.code = #{code}
+			</if>
+			<if test="type_id != null">
+				and a.type_id = #{type_id}
+			</if>
+			<if test="sign_date != null">
+				and a.sign_date = #{sign_date}
+			</if>
+			<if test="valid_date != null">
+				and a.valid_date = #{valid_date}
+			</if>
+			<if test="end_date != null">
+				and a.end_date = #{end_date}
+			</if>
+			<if test="relieve_date != null">
+				and a.relieve_date = #{relieve_date}
+			</if>
+			<if test="state != null">
+				and a.state = #{state}
+			</if>
+			<if test="remark != null">
+				and a.remark = #{remark}
+			</if>
+			<if test="create_time != null">
+				and a.create_time = #{create_time}
+			</if>
+			<if test="map.valid_date_min != null">
+				and a.valid_date >= #{map.valid_date_min}
+			</if>
+			<if test="map.valid_date_max != null">
+				and #{map.valid_date_max} >= a.valid_date
+			</if>
+			<if test="map.end_date_min != null">
+				and (a.end_date is null or a.end_date >= #{map.end_date_min})
+			</if>
+			<if test="map.end_date_max != null">
+				and (a.end_date is null or #{map.end_date_max} >= a.end_date)
+			</if>
+			<if test="map.keyword != null">
+				and a.keyword like concat('%',#{map.keyword},'%')
+			</if>
+			<if test="map.code_valid != null">
+				and a.id !=#{map.id} and a.code =#{map.code_valid }
+			</if>
+			<if test="map.name != null">
+				and b.name like concat('%',#{map.name},'%')
+			</if>
+			<if test="map.check_state != null">
+				and ( 1=0
+					<if test="map.state1 != null">
+						or (a.state != 4 and a.valid_date > #{map.now_date})
+					</if>
+					<if test="map.state2 != null">
+						or  (a.state != 4 and #{map.now_date} >= a.valid_date and a.end_date >= #{map.now_date})
+					</if>
+					<if test="map.state3 != null">
+						or  (a.state != 4 and #{map.now_date} > a.end_date)
+					</if>
+					<if test="map.state4 != null">
+						or a.state = 4
+					</if>
+					)
+			</if>
+			<if test="map.state != null">
+				<choose>
+					<when test="map.state == 1">
+					and a.valid_date > #{map.now_date}
+					</when>
+					<when test="map.state == 2">
+					and #{map.now_date} >= a.valid_date and a.end_date >= #{map.now_date}
+					</when>
+					<when test="map.state == 3">
+					and  #{map.now_date} > a.end_date
+					</when>
+					<when test="map.state == 4">
+					and  a.state = #{map.state}
+					</when>
+				</choose>
+			</if>
+			<if test="map.ids != null">
+				and a.id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+		<if test="map.sort != null">
+			order by a.id desc
+		</if>
+	</sql>
+
+	<select id="selectStaffContract" resultMap="StaffContract_help" parameterType="StaffContract">
+		select a.*,b.name,b.code as user_code,c.name as type_name, 
+		g.contract_id as scf_contract_id, g.type as scf_type, g.file_id as scf_file_id,g.create_time as scf_create_time,
+		case when g.type = '3' then h.url else g.url end as scf_url,
+		case when g.type = '3' then h.name else g.name end as scf_name, 
+		g.sort as scf_sort,g.id as scf_id from staff_contract a 
+		left join staff b on a.staff_id=b.id left join staff_contract_type c on a.type_id=c.id
+		left join staff_contract_file g on a.id = g.contract_id left join file h on g.file_id = h.id and g.type = 3
+		<include refid="sf-staffContract" />
+	</select>
+	
+	<select id="selectStaffContractList" resultType="StaffContract" parameterType="StaffContract">
+		select a.* from staff_contract a
+		<include refid="sf-staffContract" />
+	</select>
+	
+	<select id="selectStaffContractCount" resultType="int" parameterType="StaffContract">
+		select count(1) from staff_contract a left join staff b on a.staff_id=b.id 
+		<include refid="sf-staffContract" />
+	</select>
+	
+	<select id="selectStaffContractPageList" resultType="StaffContract" parameterType="StaffContract">
+		select a.*,b.name,c.name as type_name from staff_contract a left join staff b on a.staff_id=b.id left join staff_contract_type c on a.type_id=c.id
+		<include refid="sf-staffContract" />
+		limit #{map.startIndex},#{map.pageSize}
+	</select>
+	
+	<select id="selectStaffContractSort" resultType="int" parameterType="StaffContract">
+		select max(a.id) from staff_contract a
+		<include refid="sf-staffContract" />
+	</select>
+
+	<insert id="insertStaffContract" parameterType="StaffContract" useGeneratedKeys="true"
+		keyProperty="id"> 
+		<![CDATA[insert into staff_contract (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">id,</if> 
+			<if test="staff_id != null">staff_id,</if> 
+			<if test="code != null">code,</if> 
+			<if test="type_id != null">type_id,</if> 
+			<if test="sign_date != null">sign_date,</if> 
+			<if test="valid_date != null">valid_date,</if> 
+			<if test="end_date != null">end_date,</if> 
+			<if test="relieve_date != null">relieve_date,</if> 
+			<if test="state != null">state,</if> 
+			<if test="remark != null">remark,</if> 
+			<if test="create_time != null">create_time,</if> 
+		</trim>
+		<![CDATA[) values (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">#{id},</if> 
+			<if test="staff_id != null">#{staff_id},</if> 
+			<if test="code != null">#{code},</if> 
+			<if test="type_id != null">#{type_id},</if> 
+			<if test="sign_date != null">#{sign_date},</if> 
+			<if test="valid_date != null">#{valid_date},</if> 
+			<if test="end_date != null">#{end_date},</if> 
+			<if test="relieve_date != null">#{relieve_date},</if> 
+			<if test="state != null">#{state},</if> 
+			<if test="remark != null">#{remark},</if> 
+			<if test="create_time != null">#{create_time},</if> 
+		</trim>
+		<![CDATA[)]]>
+	</insert>
+
+	<update id="updateStaffContract" parameterType="StaffContract">
+		update staff_contract
+		<set>
+			<if test="staff_id != null">staff_id=#{staff_id},</if>
+			<if test="code != null">code=#{code},</if>
+			<if test="type_id != null">type_id=#{type_id},</if>
+			<if test="sign_date != null">sign_date=#{sign_date},</if>
+			<if test="map.null_sign_date != null">sign_date=null,</if>
+			<if test="valid_date != null">valid_date=#{valid_date},</if>
+			<if test="end_date != null">end_date=#{end_date},</if>
+			<if test="relieve_date != null">relieve_date=#{relieve_date},</if>
+			<if test="state != null">state=#{state},</if>
+			<if test="remark != null">remark=#{remark},</if>
+			<if test="create_time != null">create_time=#{create_time},</if>
+		</set>
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</update>
+	
+	<delete id="deleteStaffContract" parameterType="StaffContract">
+		delete from staff_contract 
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</delete>
+</mapper>

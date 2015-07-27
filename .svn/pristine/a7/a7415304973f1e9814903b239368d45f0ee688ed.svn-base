@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="entity.ForumUser">  
+	<resultMap id="forumUserResult" type="ForumUser">
+		<result column="id" property="id" jdbcType="DECIMAL" />
+		<result column="bicon_url" property="bicon_url" jdbcType="VARCHAR" />
+		<result column="micon_url" property="micon_url" jdbcType="VARCHAR" />
+		<result column="sicon_url" property="sicon_url" jdbcType="VARCHAR" />
+		<result column="thread_count" property="thread_count" jdbcType="DECIMAL" />
+		<result column="post_count" property="post_count" jdbcType="DECIMAL" />
+		<result column="user_id" property="user_id" jdbcType="DECIMAL" />
+		<result column="user_name" property="user_name" jdbcType="VARCHAR" />
+    </resultMap>
+    
+	<resultMap id="forumUserResultOther" type="ForumUser">
+		<result column="bicon_url" property="bicon_url" jdbcType="VARCHAR" />
+		<result column="micon_url" property="micon_url" jdbcType="VARCHAR" />
+		<result column="sicon_url" property="sicon_url" jdbcType="VARCHAR" />
+		<result column="uthread_count" property="thread_count" jdbcType="DECIMAL" />
+		<result column="upost_count" property="post_count" jdbcType="DECIMAL" />
+    </resultMap>
+
+	<sql id="sf-forumUser">
+		<where>
+			<if test="id != null">
+				and a.id = #{id}
+			</if>
+			<if test="bicon_url != null">
+				and a.bicon_url = #{bicon_url}
+			</if>
+			<if test="micon_url != null">
+				and a.micon_url = #{micon_url}
+			</if>
+			<if test="sicon_url != null">
+				and a.sicon_url = #{sicon_url}
+			</if>
+			<if test="thread_count != null">
+				and a.thread_count = #{thread_count}
+			</if>
+			<if test="post_count != null">
+				and a.post_count = #{post_count}
+			</if>
+			<if test="user_id != null">
+				and a.user_id = #{user_id}
+			</if>
+			<if test="map.keyword != null">
+				and a.keyword like concat('%',#{map.keyword},'%')
+			</if>
+			<if test="map.ids != null">
+				and a.id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+		<if test="map.sort != null">
+			order by a.id desc
+		</if>
+	</sql>
+
+	<select id="selectForumUser" resultMap="forumUserResult" parameterType="ForumUser">
+		select a.*,b.real_name as user_name from forum_user a left join user b on a.user_id = b.id
+		<include refid="sf-forumUser" />
+	</select>
+	
+	<select id="selectForumUserList" resultType="ForumUser" parameterType="ForumUser">
+		select a.* from forum_user a
+		<include refid="sf-forumUser" />
+	</select>
+	
+	<select id="selectForumUserCount" resultType="int" parameterType="ForumUser">
+		select count(1) from forum_user a
+		<include refid="sf-forumUser" />
+	</select>
+	
+	<select id="selectForumUserPageList" resultType="ForumUser" parameterType="ForumUser">
+		select a.* from forum_user a
+		<include refid="sf-forumUser" />
+		limit #{map.startIndex},#{map.pageSize}
+	</select>
+
+	<insert id="insertForumUser" parameterType="ForumUser" useGeneratedKeys="true"
+		keyProperty="id"> 
+		<![CDATA[insert into forum_user (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">id,</if> 
+			<if test="bicon_url != null">bicon_url,</if> 
+			<if test="micon_url != null">micon_url,</if> 
+			<if test="sicon_url != null">sicon_url,</if> 
+			<if test="thread_count != null">thread_count,</if> 
+			<if test="post_count != null">post_count,</if> 
+			<if test="user_id != null">user_id,</if> 
+		</trim>
+		<![CDATA[) values (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">#{id},</if> 
+			<if test="bicon_url != null">#{bicon_url},</if> 
+			<if test="micon_url != null">#{micon_url},</if> 
+			<if test="sicon_url != null">#{sicon_url},</if> 
+			<if test="thread_count != null">#{thread_count},</if> 
+			<if test="post_count != null">#{post_count},</if> 
+			<if test="user_id != null">#{user_id},</if> 
+		</trim>
+		<![CDATA[)]]>
+	</insert>
+
+	<update id="updateForumUser" parameterType="ForumUser">
+		update forum_user
+		<set>
+			<if test="bicon_url != null">bicon_url=#{bicon_url},</if>
+			<if test="micon_url != null">micon_url=#{micon_url},</if>
+			<if test="sicon_url != null">sicon_url=#{sicon_url},</if>
+			<if test="thread_count != null">thread_count=#{thread_count},</if>
+			<if test="post_count != null">post_count=#{post_count},</if>
+		</set>
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="user_id != null">
+				and user_id = #{user_id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</update>
+	
+	<update id="updateForumUserCount" parameterType="ForumPlate">
+		update forum_user a set thread_count = (select count(1) from forum_thread where creator_id = a.user_id and is_delete = 0),
+		post_count = (select count(1) from forum_post b left join forum_thread c on b.thread_id = c.id where b.creator_id = a.user_id and c.is_delete = 0)
+		<where>
+			<if test="id != null">
+				and a.id = #{id}
+			</if> 
+		</where>
+	</update>
+	
+	<delete id="deleteForumUser" parameterType="ForumUser">
+		delete from forum_user 
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</delete>
+</mapper>

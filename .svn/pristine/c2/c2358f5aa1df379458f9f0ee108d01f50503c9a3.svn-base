@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="entity.ForumThread">  
+	<resultMap id="forumThreadResult" type="ForumThread">
+		<result column="id" property="id" jdbcType="DECIMAL" />
+		<result column="plate_id" property="plate_id" jdbcType="DECIMAL" />
+		<result column="plate_name" property="plate_name" jdbcType="VARCHAR" />
+		<result column="subject" property="subject" jdbcType="VARCHAR" />
+		<result column="content" property="content" jdbcType="VARCHAR" />
+		<result column="is_top" property="is_top" jdbcType="VARCHAR" />
+		<result column="is_close" property="is_close" jdbcType="VARCHAR" />
+		<result column="is_delete" property="is_delete" jdbcType="VARCHAR" />
+		<result column="view_count" property="view_count" jdbcType="DECIMAL" />
+		<result column="reply_count" property="reply_count" jdbcType="DECIMAL" />
+		<result column="last_poster_id" property="last_poster_id" jdbcType="DECIMAL" />
+		<result column="last_poster_name" property="last_poster_name" jdbcType="VARCHAR" />
+		<result column="last_post_time" property="last_post_time" jdbcType="TIMESTAMP" />
+		<result column="has_file" property="has_file" jdbcType="DECIMAL" />
+		<result column="creator_id" property="creator_id" jdbcType="DECIMAL" />
+		<result column="creator_name" property="creator_name" jdbcType="VARCHAR" />
+		<result column="create_time" property="create_time" jdbcType="TIMESTAMP" />
+		<association property="user" resultMap="entity.ForumUser.forumUserResultOther"></association>
+		<collection property="posts" resultMap="forumThreadPostResult"></collection>
+		<collection property="files" resultMap="entity.ForumFile.forumFileResult"></collection>
+    </resultMap>
+    
+	<resultMap id="forumThreadPostResult" type="ForumPost">
+	    <result column="pid" property="id" jdbcType="DECIMAL" />
+	    <result column="pcontent" property="content" jdbcType="VARCHAR" /> 
+	</resultMap>
+
+	<sql id="sf-forumThread">
+		<where>
+			<if test="id != null">
+				and a.id = #{id}
+			</if>
+			<if test="plate_id != null">
+				and a.plate_id = #{plate_id}
+			</if>
+			<if test="subject != null">
+				and a.subject = #{subject}
+			</if>
+			<if test="content != null">
+				and a.content = #{content}
+			</if>
+			<if test="is_top != null">
+				and a.is_top = #{is_top}
+			</if>
+			<if test="is_close != null">
+				and a.is_close = #{is_close}
+			</if>
+			<if test="is_delete != null">
+				and a.is_delete = #{is_delete}
+			</if>
+			<if test="view_count != null">
+				and a.view_count = #{view_count}
+			</if>
+			<if test="reply_count != null">
+				and a.reply_count = #{reply_count}
+			</if>
+			<if test="last_poster_id != null">
+				and a.last_poster_id = #{last_poster_id}
+			</if>
+			<if test="last_post_time != null">
+				and a.last_post_time = #{last_post_time}
+			</if>
+			<if test="creator_id != null">
+				and a.creator_id = #{creator_id}
+			</if>
+			<if test="create_time != null">
+				and a.create_time = #{create_time}
+			</if>
+			<if test="map.subject != null">
+				and a.subject like concat('%',#{map.subject},'%')
+			</if>
+			<if test="map.keyword != null">
+				and (a.subject like concat('%',#{map.keyword},'%') or a.content like concat('%',#{map.keyword},'%'))
+			</if>
+			<if test="map.ids != null">
+				and a.id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+			<if test="map.sort_reply_count != null">
+				and a.reply_count > 0 order by a.reply_count desc
+			</if>
+			<if test="map.sort_last_post_time != null">
+			    and a.last_post_time IS NOT NULL order by a.last_post_time desc
+			</if>
+			<if test="map.prev != null">
+				<![CDATA[and a.id > #{map.id}]]>
+			</if>
+			<if test="map.next != null">
+				<![CDATA[and a.id < #{map.id}]]>
+			</if>
+		</where>
+		<if test="map.sort != null">
+			order by a.id desc
+		</if>
+		<if test="map.sort_asc != null">
+			order by a.id
+		</if>
+	</sql>
+
+	<select id="selectForumThread" resultMap="forumThreadResult" parameterType="ForumThread">
+		select a.*,b.real_name as creator_name, e.thread_count as uthread_count, e.post_count as upost_count,e.bicon_url,e.micon_url,
+		f.id as ff_id, f.type as ff_type, f.sort as ff_sort, f.file_id as ff_file_id,
+		case when f.type = '3' then g.url else f.url end as ff_url,
+		case when f.type = '3' then g.name else f.name end as ff_name
+		from forum_thread a 
+		left join user b on a.creator_id = b.id
+		left join forum_user e on a.creator_id = e.user_id
+		left join forum_file f on a.id = f.thread_id and f.ftype = 1
+		left join file g on f.file_id = g.id and f.type = 3
+		<include refid="sf-forumThread" />
+	</select>
+	
+	<select id="selectForumThreadForPrev" resultType="ForumThread" parameterType="ForumThread">
+		select a.id from forum_thread a  
+		<include refid="sf-forumThread" />
+		limit 0,1
+	</select>
+	
+	<select id="selectForumThreadForNext" resultType="ForumThread" parameterType="ForumThread">
+		select a.id from forum_thread a	 
+		<include refid="sf-forumThread" />
+		limit 0,1
+	</select>
+	
+	<select id="selectForumThreadList" resultMap="forumThreadResult" parameterType="ForumThread">
+		select a.id,a.plate_id,a.subject,a.view_count,a.reply_count,a.create_time,a.creator_id,b.real_name as creator_name,a.last_poster_id,c.real_name as last_poster_name,a.last_post_time,
+		a.has_file,d.name as plate_name,e.thread_count as uthread_count,e.post_count as upost_count
+		from forum_thread a
+		left join user b on a.creator_id = b.id
+		left join user c on a.last_poster_id = c.id
+		left join forum_plate d on a.plate_id = d.id
+		left join forum_user e on a.creator_id = e.user_id 
+		<include refid="sf-forumThread" />
+	</select>
+	
+	<select id="selectForumThreadCount" resultType="int" parameterType="ForumThread">
+		select count(1) from forum_thread a
+		<include refid="sf-forumThread" />
+	</select>
+	
+	<select id="selectForumThreadPageList" resultMap="forumThreadResult" parameterType="ForumThread">
+		select a.id,a.plate_id,a.subject,a.view_count,a.reply_count,a.create_time,a.creator_id,b.real_name as creator_name,a.last_poster_id,c.real_name as last_poster_name,a.last_post_time,d.name as plate_name,a.has_file from forum_thread a
+		left join user b on a.creator_id = b.id
+		left join user c on a.last_poster_id = c.id
+		left join forum_plate d on a.plate_id = d.id 
+		<include refid="sf-forumThread" />
+		limit #{map.startIndex},#{map.pageSize}
+	</select>
+	
+	<select id="selectForumThreadCountWithPosts" resultType="int" parameterType="ForumThread">
+		select count(1) from forum_thread a
+		<include refid="sf-forumThread" />
+	</select>
+	
+	<select id="selectForumThreadPageListWithPosts" resultMap="forumThreadResult" parameterType="ForumThread">
+		select t.*,e.id as pid,e.content as pcontent from 
+		(select a.id,a.plate_id,a.subject,a.view_count,a.reply_count,a.create_time,a.creator_id,b.real_name as creator_name,a.last_poster_id,
+			c.real_name as last_poster_name,a.last_post_time,d.name as plate_name,a.has_file
+			from forum_thread a
+			left join user b on a.creator_id = b.id
+			left join user c on a.last_poster_id = c.id
+			left join forum_plate d on a.plate_id = d.id 
+			<include refid="sf-forumThread" />
+			limit #{map.startIndex},#{map.pageSize}) 
+		as t left join forum_post e on t.id = e.thread_id and e.is_first = 0 and e.is_delete = 0 and e.creator_id = #{map.creator_id} 
+		order by e.id desc
+	</select>
+
+	<insert id="insertForumThread" parameterType="ForumThread" useGeneratedKeys="true"
+		keyProperty="id"> 
+		<![CDATA[insert into forum_thread (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">id,</if> 
+			<if test="plate_id != null">plate_id,</if> 
+			<if test="subject != null">subject,</if> 
+			<if test="content != null">content,</if> 
+			<if test="is_top != null">is_top,</if> 
+			<if test="is_close != null">is_close,</if> 
+			<if test="is_delete != null">is_delete,</if> 
+			<if test="view_count != null">view_count,</if> 
+			<if test="reply_count != null">reply_count,</if> 
+			<if test="last_poster_id != null">last_poster_id,</if> 
+			<if test="last_post_time != null">last_post_time,</if>
+			<if test="has_file != null">has_file,</if>  
+			<if test="creator_id != null">creator_id,</if> 
+			<if test="create_time != null">create_time,</if> 
+		</trim>
+		<![CDATA[) values (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">#{id},</if> 
+			<if test="plate_id != null">#{plate_id},</if> 
+			<if test="subject != null">#{subject},</if> 
+			<if test="content != null">#{content},</if> 
+			<if test="is_top != null">#{is_top},</if> 
+			<if test="is_close != null">#{is_close},</if> 
+			<if test="is_delete != null">#{is_delete},</if> 
+			<if test="view_count != null">#{view_count},</if> 
+			<if test="reply_count != null">#{reply_count},</if> 
+			<if test="last_poster_id != null">#{last_poster_id},</if> 
+			<if test="last_post_time != null">#{last_post_time},</if>
+			<if test="has_file != null">#{has_file},</if>  
+			<if test="creator_id != null">#{creator_id},</if> 
+			<if test="create_time != null">#{create_time},</if> 
+		</trim>
+		<![CDATA[)]]>
+	</insert>
+
+	<update id="updateForumThread" parameterType="ForumThread">
+		update forum_thread
+		<set>
+			<if test="plate_id != null">plate_id=#{plate_id},</if>
+			<if test="subject != null">subject=#{subject},</if>
+			<if test="content != null">content=#{content},</if>
+			<if test="is_top != null">is_top=#{is_top},</if>
+			<if test="is_close != null">is_close=#{is_close},</if>
+			<if test="is_delete != null">is_delete=#{is_delete},</if>
+			<if test="view_count != null">view_count=#{view_count},</if>
+			<if test="reply_count != null">reply_count=#{reply_count},</if>
+			<if test="last_poster_id != null">last_poster_id=#{last_poster_id},</if>
+			<if test="last_post_time != null">last_post_time=#{last_post_time},</if>
+			<if test="has_file != null">has_file=#{has_file},</if>
+			<if test="creator_id != null">creator_id=#{creator_id},</if>
+			<if test="create_time != null">create_time=#{create_time},</if>
+		</set>
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</update>
+	
+	<update id="updateForumThreadViewCount" parameterType="ForumThread">
+		update forum_thread set view_count = view_count + 1
+		<where>
+			<if test="id != null">
+				and id = #{id} and is_delete = 0 
+			</if> 
+		</where>
+	</update>
+	
+	<delete id="deleteForumThread" parameterType="ForumThread">
+		delete from forum_thread 
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="thread_id != null">
+			    and thread_id = #{thread_id}
+			</if>
+			<if test="post_id != null">
+			    and post_id = #{post_id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</delete>
+</mapper>

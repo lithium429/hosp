@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="entity.ForumPost">  
+	<resultMap id="forumPostResult" type="ForumPost">
+		<result column="id" property="id" jdbcType="DECIMAL" />
+		<result column="plate_id" property="plate_id" jdbcType="DECIMAL" />
+		<result column="thread_id" property="thread_id" jdbcType="DECIMAL" />
+		<result column="content" property="content" jdbcType="VARCHAR" />
+		<result column="is_close" property="is_close" jdbcType="VARCHAR" />
+		<result column="is_delete" property="is_delete" jdbcType="VARCHAR" />
+		<result column="is_first" property="is_first" jdbcType="VARCHAR" />
+		<result column="flayer" property="flayer" jdbcType="DECIMAL" />
+		<result column="replyed_url" property="replyed_url" jdbcType="VARCHAR" />
+		<result column="creator_id" property="creator_id" jdbcType="DECIMAL" />
+		<result column="creator_name" property="creator_name" jdbcType="VARCHAR" />
+		<result column="create_time" property="create_time" jdbcType="TIMESTAMP" />
+		<association property="user" resultMap="entity.ForumUser.forumUserResultOther"></association>
+		<association property="replyed_post" resultMap="formPostReplyResult"></association>
+		<collection property="files" resultMap="entity.ForumFile.forumFileResult"></collection>
+    </resultMap>
+    
+	<resultMap id="formPostReplyResult" type="ForumPost">
+	    <result column="rid" property="id" jdbcType="DECIMAL" />
+		<result column="rplate_id" property="plate_id" jdbcType="DECIMAL" />
+		<result column="rthread_id" property="thread_id" jdbcType="DECIMAL" />
+		<result column="rcontent" property="content" jdbcType="VARCHAR" />
+		<result column="rreplyed_url" property="replyed_url" jdbcType="VARCHAR" />
+	    <result column="rcreator_id" property="creator_id" jdbcType="DECIMAL" />
+		<result column="rcreator_name" property="creator_name" jdbcType="VARCHAR" />
+		<result column="rcreate_time" property="create_time" jdbcType="TIMESTAMP" />
+	</resultMap>
+
+	<sql id="sf-forumPost">
+		<where>
+			<if test="id != null">
+				and a.id = #{id}
+			</if>
+			<if test="plate_id != null">
+				and a.plate_id = #{plate_id}
+			</if>
+			<if test="thread_id != null">
+				and a.thread_id = #{thread_id}
+			</if>
+			<if test="content != null">
+				and a.content = #{content}
+			</if>
+			<if test="is_close != null">
+				and a.is_close = #{is_close}
+			</if>
+			<if test="is_delete != null">
+				and a.is_delete = #{is_delete}
+			</if>
+			<if test="is_first != null">
+				and a.is_first = #{is_first}
+			</if>
+			<if test="flayer != null">
+				and a.flayer = #{flayer}
+			</if>
+			<if test="replyed_id != null">
+				and a.replyed_id = #{replyed_id}
+			</if>
+			<if test="creator_id != null">
+				and a.creator_id = #{creator_id}
+			</if>
+			<if test="create_time != null">
+				and a.create_time = #{create_time}
+			</if>
+			<if test="map.keyword != null">
+				and a.keyword like concat('%',#{map.keyword},'%')
+			</if>
+			<if test="map.ids != null">
+				and a.id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+			<if test="map.today != null">
+			    and a.create_time between #{map.today_start} and #{map.today_end}
+			</if>
+		</where>
+		<if test="map.sort != null">
+			order by a.id desc
+		</if>
+		<if test="map.sort_thread != null">
+			order by a.is_first desc, a.id asc
+		</if>
+	</sql>
+
+	<select id="selectForumPost" resultMap="forumPostResult" parameterType="ForumPost">
+		select a.*,b.real_name as creator_name,f.id as ff_id, f.type as ff_type, f.sort as ff_sort, f.file_id as ff_file_id,
+		case when f.type = '3' then g.url else f.url end as ff_url,
+		case when f.type = '3' then g.name else f.name end as ff_name 
+		from forum_post a left join user b on a.creator_id = b.id
+		left join forum_file f on a.id = f.post_id and f.ftype = 2
+		left join file g on f.file_id = g.id and f.type = 3
+		<include refid="sf-forumPost" />
+	</select>
+	
+	<select id="selectForumPostList" resultType="ForumPost" parameterType="ForumPost">
+		select a.* from forum_post a
+		<include refid="sf-forumPost" />
+	</select>
+	
+	<select id="selectForumPostThreadIds" resultType="int" parameterType="ForumPost">
+		select distinct a.thread_id from forum_post a
+		<include refid="sf-forumPost" />
+	</select>
+	
+	<select id="selectForumPostCount" resultType="int" parameterType="ForumPost">
+		select count(1) from forum_post a
+		<include refid="sf-forumPost" />
+	</select> 
+	
+	<select id="selectForumPostPageList" resultMap="forumPostResult" parameterType="ForumPost">
+		select t.*,f.id as ff_id, f.type as ff_type, f.sort as ff_sort, f.file_id as ff_file_id,
+		case when f.type = '3' then g.url else f.url end as ff_url,
+		case when f.type = '3' then g.name else f.name end as ff_name  
+		from (select a.*,b.real_name as creator_name,c.thread_count as uthread_count, c.post_count as upost_count,c.micon_url,
+			d.id as rid, d.plate_id as rplate_id, d.thread_id as rthread_id, d.content as rcontent, d.replyed_url as rreplyed_url,
+			d.creator_id as rcreator_id, e.real_name as rcreator_name, d.create_time as rcreate_time from forum_post a 
+			left join user b on a.creator_id = b.id
+			left join forum_user c on a.creator_id = c.user_id
+			left join forum_post d on a.replyed_id = d.id
+			left join user e on d.creator_id = e.id 
+			<include refid="sf-forumPost" />
+			limit #{map.startIndex},#{map.pageSize}
+		) as t
+		left join forum_file f on t.id = f.post_id and f.ftype = 2
+		left join file g on f.file_id = g.id and f.type = 3 
+	</select>
+
+	<insert id="insertForumPost" parameterType="ForumPost" useGeneratedKeys="true"
+		keyProperty="id"> 
+		<![CDATA[insert into forum_post (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">id,</if> 
+			<if test="plate_id != null">plate_id,</if> 
+			<if test="thread_id != null">thread_id,</if> 
+			<if test="content != null">content,</if> 
+			<if test="is_close != null">is_close,</if> 
+			<if test="is_delete != null">is_delete,</if> 
+			<if test="is_first != null">is_first,</if> 
+			<if test="flayer != null">flayer,</if> 
+			<if test="replyed_id != null">replyed_id,</if>
+			<if test="replyed_url != null">replyed_url,</if>
+			<if test="has_file != null">has_file,</if>    
+			<if test="creator_id != null">creator_id,</if> 
+			<if test="create_time != null">create_time,</if> 
+		</trim>
+		<![CDATA[) values (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">#{id},</if> 
+			<if test="plate_id != null">#{plate_id},</if> 
+			<if test="thread_id != null">#{thread_id},</if> 
+			<if test="content != null">#{content},</if> 
+			<if test="is_close != null">#{is_close},</if> 
+			<if test="is_delete != null">#{is_delete},</if> 
+			<if test="is_first != null">#{is_first},</if> 
+			<if test="flayer != null">#{flayer},</if>
+			<if test="replyed_id != null">#{replyed_id},</if>
+			<if test="replyed_url != null">#{replyed_url},</if> 
+			<if test="has_file != null">#{has_file},</if>   
+			<if test="creator_id != null">#{creator_id},</if> 
+			<if test="create_time != null">#{create_time},</if> 
+		</trim>
+		<![CDATA[)]]>
+	</insert>
+
+	<update id="updateForumPost" parameterType="ForumPost">
+		update forum_post
+		<set>
+			<if test="plate_id != null">plate_id=#{plate_id},</if>
+			<if test="thread_id != null">thread_id=#{thread_id},</if>
+			<if test="content != null">content=#{content},</if>
+			<if test="is_close != null">is_close=#{is_close},</if>
+			<if test="is_delete != null">is_delete=#{is_delete},</if>
+			<if test="is_first != null">is_first=#{is_first},</if>
+			<if test="flayer != null">flayer=#{flayer},</if>
+			<if test="replyed_url != null">replyed_url=#{replyed_url},</if>
+			<if test="replyed_id != null">replyed_id=#{replyed_id},</if>
+			<if test="has_file != null">has_file=#{has_file},</if>
+			<if test="creator_id != null">creator_id=#{creator_id},</if>
+			<if test="create_time != null">create_time=#{create_time},</if>
+		</set>
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="thread_id != null">
+				and thread_id = #{thread_id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</update>
+	
+	<delete id="deleteForumPost" parameterType="ForumPost">
+		delete from forum_post 
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</delete>
+</mapper>

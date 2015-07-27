@@ -1,0 +1,19 @@
+/**   
+* @Title: ActivitiDao.java 
+* @Package: com.xz.oa.core.dao.workflow 
+* @Description: 
+* @author: davidwan
+* @date: 2014-11-28 下午3:07:57 
+* @version: V1.0   
+*/
+package com.xz.oa.core.dao.workflow;
+
+public interface ActivitiDao {
+	/**
+	 * @Description 流程完成后清理detail表中的表单类型数据
+	 * @param processInstanceId
+	 * @return 
+	 * int     
+	 */
+	public int deleteFormPropertyByProcessInstanceId(String processInstanceId); 
+}

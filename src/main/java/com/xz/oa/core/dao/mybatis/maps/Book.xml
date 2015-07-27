@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="entity.Book">  
+	<resultMap id="bookResult" type="Book">
+		<result column="id" property="id" jdbcType="DECIMAL" />
+		<result column="name" property="name" jdbcType="VARCHAR" />
+		<result column="type_id" property="type_id" jdbcType="DECIMAL" />
+		<result column="image_url" property="image_url" jdbcType="VARCHAR" />
+		<result column="author" property="author" jdbcType="VARCHAR" />
+		<result column="buy_time" property="buy_time"  />
+		<result column="publish_time" property="publish_time"  />
+		<result column="page_count" property="page_count" jdbcType="DECIMAL" />
+		<result column="publisher" property="publisher" jdbcType="VARCHAR" />
+		<result column="is_borrow" property="is_borrow" jdbcType="VARCHAR" />
+		<result column="code" property="code" jdbcType="VARCHAR" />
+		<result column="remark" property="remark" jdbcType="VARCHAR" />
+		<result column="sort" property="sort" jdbcType="DECIMAL" />
+		<result column="creator_id" property="creator_id" jdbcType="DECIMAL" />
+		<result column="create_time" property="create_time"  />
+		<result column="state" property="state" jdbcType="DECIMAL" />
+    </resultMap>
+
+	<sql id="sf-book">
+		<where>
+			<if test="id != null">
+				and a.id = #{id}
+			</if>
+			<if test="name != null">
+				and a.name = #{name}
+			</if>
+			<if test="type_id != null">
+				and a.type_id = #{type_id}
+			</if>
+			<if test="image_url != null">
+				and a.image_url = #{image_url}
+			</if>
+			<if test="author != null">
+				and a.author = #{author}
+			</if>
+			<if test="buy_time != null">
+				and a.buy_time = #{buy_time}
+			</if>
+			<if test="publish_time != null">
+				and a.publish_time = #{publish_time}
+			</if>
+			<if test="page_count != null">
+				and a.page_count = #{page_count}
+			</if>
+			<if test="publisher != null">
+				and a.publisher = #{publisher}
+			</if>
+			<if test="is_borrow != null">
+				and a.is_borrow = #{is_borrow}
+			</if>
+			<if test="code != null">
+				and a.code = #{code}
+			</if>
+			<if test="remark != null">
+				and a.remark = #{remark}
+			</if>
+			<if test="sort != null">
+				and a.sort = #{sort}
+			</if>
+			<if test="state != null">
+				and a.state = #{state}
+			</if>
+			<if test="creator_id != null">
+				and a.creator_id = #{creator_id}
+			</if>
+			<if test="create_time != null">
+				and a.create_time = #{create_time}
+			</if>
+			<if test="map.keyword != null">
+				and a.keyword like concat('%',#{map.keyword},'%')
+			</if>
+			<if test="map.name != null">
+				and a.name like concat('%',#{map.name},'%')
+			</if>
+			<if test="map.author != null">
+				and a.author like concat('%',#{map.author},'%')
+			</if>
+			<if test="map.name_valid != null">
+				and a.id !=#{map.id} and a.name =#{map.name_valid}
+			</if>
+			<if test="map.ids != null">
+				and a.id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</sql>
+	
+	<sql id="sf-book-order">
+		<include refid="sf-book" />
+		<if test="map.sort != null">
+			order by a.sort desc
+		</if>
+	</sql>
+
+	<select id="selectBook" resultType="Book" parameterType="Book">
+		select a.*,b.name as type_name from book a left join book_type b on a.type_id=b.id
+		<include refid="sf-book" />
+	</select>
+	
+	<select id="selectBookList" resultType="Book" parameterType="Book">
+		select a.* from book a
+		<include refid="sf-book-order" />
+	</select>
+	
+	<select id="selectBookList_help" resultType="Book" parameterType="Book">
+		select a.* from book a <include refid="sf-book" /> and a.id not in 
+		(select b.book_id from book_borrow b where b.creator_id=#{map.sel_book} and b.verify_state=1)
+	 	order by a.sort desc
+	</select>
+	
+	<select id="selectBookCount" resultType="int" parameterType="Book">
+		select count(1) from book a
+		<include refid="sf-book" />
+	</select>
+	
+	<select id="selectBookPageList" resultType="Book" parameterType="Book">
+		select a.*,b.name as type_name from book a left join book_type b on a.type_id=b.id
+		<include refid="sf-book-order" />
+		limit #{map.startIndex},#{map.pageSize}
+	</select>
+	
+	<select id="selectBookSort" resultType="int" parameterType="Book">
+		select max(a.sort) from book a
+		<include refid="sf-book" />
+	</select>
+	
+	<select id="selectBookCode" resultType="String" parameterType="Book">
+		select max(a.code) from book a
+		<include refid="sf-book" />
+	</select>
+
+	<insert id="insertBook" parameterType="Book" useGeneratedKeys="true"
+		keyProperty="id"> 
+		<![CDATA[insert into book (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">id,</if> 
+			<if test="name != null">name,</if> 
+			<if test="type_id != null">type_id,</if> 
+			<if test="image_url != null">image_url,</if> 
+			<if test="author != null">author,</if> 
+			<if test="buy_time != null">buy_time,</if> 
+			<if test="publish_time != null">publish_time,</if> 
+			<if test="page_count != null">page_count,</if> 
+			<if test="publisher != null">publisher,</if> 
+			<if test="is_borrow != null">is_borrow,</if> 
+			<if test="code != null">code,</if> 
+			<if test="remark != null">remark,</if> 
+			<if test="sort != null">sort,</if> 
+			<if test="creator_id != null">creator_id,</if> 
+			<if test="create_time != null">create_time,</if> 
+			<if test="state != null">state,</if> 
+		</trim>
+		<![CDATA[) values (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">#{id},</if> 
+			<if test="name != null">#{name},</if> 
+			<if test="type_id != null">#{type_id},</if> 
+			<if test="image_url != null">#{image_url},</if> 
+			<if test="author != null">#{author},</if> 
+			<if test="buy_time != null">#{buy_time},</if> 
+			<if test="publish_time != null">#{publish_time},</if> 
+			<if test="page_count != null">#{page_count},</if> 
+			<if test="publisher != null">#{publisher},</if> 
+			<if test="is_borrow != null">#{is_borrow},</if> 
+			<if test="code != null">#{code},</if> 
+			<if test="remark != null">#{remark},</if> 
+			<if test="sort != null">#{sort},</if> 
+			<if test="creator_id != null">#{creator_id},</if> 
+			<if test="create_time != null">#{create_time},</if> 
+			<if test="state != null">#{state},</if> 
+		</trim>
+		<![CDATA[)]]>
+	</insert>
+
+	<update id="updateBook" parameterType="Book">
+		update book
+		<set>
+			<if test="name != null">name=#{name},</if>
+			<if test="type_id != null">type_id=#{type_id},</if>
+			<if test="image_url != null">image_url=#{image_url},</if>
+			<if test="author != null">author=#{author},</if>
+			<if test="buy_time != null">buy_time=#{buy_time},</if>
+			<if test="publish_time != null">publish_time=#{publish_time},</if>
+			<if test="page_count != null">page_count=#{page_count},</if>
+			<if test="publisher != null">publisher=#{publisher},</if>
+			<if test="is_borrow != null">is_borrow=#{is_borrow},</if>
+			<if test="code != null">code=#{code},</if>
+			<if test="remark != null">remark=#{remark},</if>
+			<if test="sort != null">sort=#{sort},</if>
+			<if test="creator_id != null">creator_id=#{creator_id},</if>
+			<if test="create_time != null">create_time=#{create_time},</if>
+			<if test="state != null">state=#{state},</if>
+		</set>
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</update>
+	
+	<delete id="deleteBook" parameterType="Book">
+		delete from book 
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</delete>
+</mapper>

@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="entity.Staff">  
+	<resultMap id="staffResult" type="Staff">
+		<result column="id" property="id" jdbcType="DECIMAL" />
+		<result column="name" property="name" jdbcType="VARCHAR" />
+		<result column="code" property="code" jdbcType="VARCHAR" />
+		<result column="sex" property="sex" jdbcType="DECIMAL" />
+		<result column="id_number" property="id_number" jdbcType="VARCHAR" />
+		<result column="birthday" property="birthday"  />
+		<result column="native_place" property="native_place" jdbcType="VARCHAR" />
+		<result column="address" property="address" jdbcType="VARCHAR" />
+		<result column="nation" property="nation" jdbcType="DECIMAL" />
+		<result column="marital_status" property="marital_status" jdbcType="DECIMAL" />
+		<result column="political_status" property="political_status" jdbcType="DECIMAL" />
+		<result column="photo" property="photo" jdbcType="VARCHAR" />
+		<result column="type" property="type" jdbcType="DECIMAL" />
+		<result column="post" property="post" jdbcType="VARCHAR" />
+		<result column="post_title" property="post_title" jdbcType="VARCHAR" />
+		<result column="post_title_level" property="post_title_level" jdbcType="DECIMAL" />
+		<result column="scheduling_type" property="scheduling_type" jdbcType="DECIMAL" />
+		<result column="phone" property="phone" jdbcType="VARCHAR" />
+		<result column="mobile" property="mobile" jdbcType="VARCHAR" />
+		<result column="email" property="email" jdbcType="VARCHAR" />
+		<result column="qq" property="qq" jdbcType="VARCHAR" />
+		<result column="entry_date" property="entry_date"  />
+		<result column="education" property="education" jdbcType="DECIMAL" />
+		<result column="graduate_date" property="graduate_date"  />
+		<result column="graduate_school" property="graduate_school" jdbcType="VARCHAR" />
+		<result column="remark" property="remark" jdbcType="VARCHAR" />
+		<result column="resume" property="resume" jdbcType="VARCHAR" />
+		<result column="user_id" property="user_id" jdbcType="DECIMAL" />
+    </resultMap>
+
+	<sql id="sf-staff">
+		<where>
+			<if test="id != null">
+				and a.id = #{id}
+			</if>
+			<if test="name != null">
+				and a.name = #{name}
+			</if>
+			<if test="code != null">
+				and a.code = #{code}
+			</if>
+			<if test="sex != null">
+				and a.sex = #{sex}
+			</if>
+			<if test="id_number != null">
+				and a.id_number = #{id_number}
+			</if>
+			<if test="birthday != null">
+				and a.birthday = #{birthday}
+			</if>
+			<if test="native_place != null">
+				and a.native_place = #{native_place}
+			</if>
+			<if test="address != null">
+				and a.address = #{address}
+			</if>
+			<if test="nation != null">
+				and a.nation = #{nation}
+			</if>
+			<if test="marital_status != null">
+				and a.marital_status = #{marital_status}
+			</if>
+			<if test="political_status != null">
+				and a.political_status = #{political_status}
+			</if>
+			<if test="photo != null">
+				and a.photo = #{photo}
+			</if>
+			<if test="type != null">
+				and a.type = #{type}
+			</if>
+			<if test="post != null">
+				and a.post = #{post}
+			</if>
+			<if test="post_title != null">
+				and a.post_title = #{post_title}
+			</if>
+			<if test="post_title_level != null">
+				and a.post_title_level = #{post_title_level}
+			</if>
+			<if test="scheduling_type != null">
+				and a.scheduling_type = #{scheduling_type}
+			</if>
+			<if test="phone != null">
+				and a.phone = #{phone}
+			</if>
+			<if test="mobile != null">
+				and a.mobile = #{mobile}
+			</if>
+			<if test="email != null">
+				and a.email = #{email}
+			</if>
+			<if test="qq != null">
+				and a.qq = #{qq}
+			</if>
+			<if test="entry_date != null">
+				and a.entry_date = #{entry_date}
+			</if>
+			<if test="education != null">
+				and a.education = #{education}
+			</if>
+			<if test="graduate_date != null">
+				and a.graduate_date = #{graduate_date}
+			</if>
+			<if test="graduate_school != null">
+				and a.graduate_school = #{graduate_school}
+			</if>
+			<if test="remark != null">
+				and a.remark = #{remark}
+			</if>
+			<if test="resume != null">
+				and a.resume = #{resume}
+			</if>
+			<if test="user_id != null">
+				and a.user_id = #{user_id}
+			</if>
+			<if test="map.keyword != null">
+				and a.keyword like concat('%',#{map.keyword},'%')
+			</if>
+			<if test="map.name != null">
+				and a.name like concat('%',#{map.name},'%')
+			</if>
+			<if test="map.code_valid != null">
+				and a.id !=#{map.id} and a.code =#{map.code_valid }
+			</if>
+			<if test="map.ids != null">
+				and a.id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+		<if test="map.sort != null">
+			order by a.id desc
+		</if>
+	</sql>
+
+	<select id="selectStaff" resultType="Staff" parameterType="Staff">
+		select a.*,b.real_name as user_name from staff a left join user b on a.user_id=b.id
+		<include refid="sf-staff" />
+	</select>
+	
+	<select id="selectStaffList" resultType="Staff" parameterType="Staff">
+		select a.* from staff a
+		<include refid="sf-staff" />
+	</select>
+	
+	<select id="selectStaffCount" resultType="int" parameterType="Staff">
+		select count(1) from staff a
+		<include refid="sf-staff" />
+	</select>
+	
+	<select id="selectStaffPageList" resultType="Staff" parameterType="Staff">
+		select a.* from staff a
+		<include refid="sf-staff" />
+		limit #{map.startIndex},#{map.pageSize}
+	</select>
+	
+	<select id="selectStaffSort" resultType="int" parameterType="Staff">
+		select max(a.id) from staff a
+		<include refid="sf-staff" />
+	</select>
+
+	<insert id="insertStaff" parameterType="Staff" useGeneratedKeys="true"
+		keyProperty="id"> 
+		<![CDATA[insert into staff (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">id,</if> 
+			<if test="name != null">name,</if> 
+			<if test="code != null">code,</if> 
+			<if test="sex != null">sex,</if> 
+			<if test="id_number != null">id_number,</if> 
+			<if test="birthday != null">birthday,</if> 
+			<if test="native_place != null">native_place,</if> 
+			<if test="address != null">address,</if> 
+			<if test="nation != null">nation,</if> 
+			<if test="marital_status != null">marital_status,</if> 
+			<if test="political_status != null">political_status,</if> 
+			<if test="photo != null">photo,</if> 
+			<if test="type != null">type,</if> 
+			<if test="post != null">post,</if> 
+			<if test="post_title != null">post_title,</if> 
+			<if test="post_title_level != null">post_title_level,</if> 
+			<if test="scheduling_type != null">scheduling_type,</if> 
+			<if test="phone != null">phone,</if> 
+			<if test="mobile != null">mobile,</if> 
+			<if test="email != null">email,</if> 
+			<if test="qq != null">qq,</if> 
+			<if test="entry_date != null">entry_date,</if> 
+			<if test="education != null">education,</if> 
+			<if test="graduate_date != null">graduate_date,</if> 
+			<if test="graduate_school != null">graduate_school,</if> 
+			<if test="remark != null">remark,</if> 
+			<if test="resume != null">resume,</if> 
+			<if test="user_id != null">user_id,</if> 
+		</trim>
+		<![CDATA[) values (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">#{id},</if> 
+			<if test="name != null">#{name},</if> 
+			<if test="code != null">#{code},</if> 
+			<if test="sex != null">#{sex},</if> 
+			<if test="id_number != null">#{id_number},</if> 
+			<if test="birthday != null">#{birthday},</if> 
+			<if test="native_place != null">#{native_place},</if> 
+			<if test="address != null">#{address},</if> 
+			<if test="nation != null">#{nation},</if> 
+			<if test="marital_status != null">#{marital_status},</if> 
+			<if test="political_status != null">#{political_status},</if> 
+			<if test="photo != null">#{photo},</if> 
+			<if test="type != null">#{type},</if> 
+			<if test="post != null">#{post},</if> 
+			<if test="post_title != null">#{post_title},</if> 
+			<if test="post_title_level != null">#{post_title_level},</if> 
+			<if test="scheduling_type != null">#{scheduling_type},</if> 
+			<if test="phone != null">#{phone},</if> 
+			<if test="mobile != null">#{mobile},</if> 
+			<if test="email != null">#{email},</if> 
+			<if test="qq != null">#{qq},</if> 
+			<if test="entry_date != null">#{entry_date},</if> 
+			<if test="education != null">#{education},</if> 
+			<if test="graduate_date != null">#{graduate_date},</if> 
+			<if test="graduate_school != null">#{graduate_school},</if> 
+			<if test="remark != null">#{remark},</if> 
+			<if test="resume != null">#{resume},</if> 
+			<if test="user_id != null">#{user_id},</if> 
+		</trim>
+		<![CDATA[)]]>
+	</insert>
+
+	<update id="updateStaff" parameterType="Staff">
+		update staff
+		<set>
+			<if test="name != null">name=#{name},</if>
+			<if test="code != null">code=#{code},</if>
+			<if test="sex != null">sex=#{sex},</if>
+			<if test="id_number != null">id_number=#{id_number},</if>
+			<if test="birthday != null">birthday=#{birthday},</if>
+			<if test="native_place != null">native_place=#{native_place},</if>
+			<if test="address != null">address=#{address},</if>
+			<if test="nation != null">nation=#{nation},</if>
+			<if test="marital_status != null">marital_status=#{marital_status},</if>
+			<if test="political_status != null">political_status=#{political_status},</if>
+			<if test="photo != null">photo=#{photo},</if>
+			<if test="type != null">type=#{type},</if>
+			<if test="post != null">post=#{post},</if>
+			<if test="post_title != null">post_title=#{post_title},</if>
+			<if test="post_title_level != null">post_title_level=#{post_title_level},</if>
+			<if test="scheduling_type != null">scheduling_type=#{scheduling_type},</if>
+			<if test="phone != null">phone=#{phone},</if>
+			<if test="mobile != null">mobile=#{mobile},</if>
+			<if test="email != null">email=#{email},</if>
+			<if test="qq != null">qq=#{qq},</if>
+			<if test="entry_date != null">entry_date=#{entry_date},</if>
+			<if test="map.null_entry_date != null">entry_date=null,</if>
+			<if test="education != null">education=#{education},</if>
+			<if test="graduate_date != null">graduate_date=#{graduate_date},</if>
+			<if test="map.null_graduate_date != null">graduate_date=null,</if>
+			<if test="graduate_school != null">graduate_school=#{graduate_school},</if>
+			<if test="remark != null">remark=#{remark},</if>
+			<if test="resume != null">resume=#{resume},</if>
+			<if test="user_id != null">user_id=#{user_id},</if>
+		</set>
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</update>
+	
+	<delete id="deleteStaff" parameterType="Staff">
+		delete from staff 
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</delete>
+</mapper>

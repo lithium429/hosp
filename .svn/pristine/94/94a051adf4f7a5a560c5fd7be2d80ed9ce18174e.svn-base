@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="entity.BookBorrowRecord">  
+	<resultMap id="bookBorrowRecordResult" type="BookBorrowRecord">
+		<result column="id" property="id" jdbcType="DECIMAL" />
+		<result column="book_id" property="book_id" jdbcType="DECIMAL" />
+		<result column="borrow_id" property="borrow_id" jdbcType="DECIMAL" />
+		<result column="borrow_state" property="borrow_state" jdbcType="DECIMAL" />
+		<result column="create_time" property="create_time"  />
+    </resultMap>
+
+	<sql id="sf-bookBorrowRecord">
+		<where>
+			<if test="id != null">
+				and a.id = #{id}
+			</if>
+			<if test="book_id != null">
+				and a.book_id = #{book_id}
+			</if>
+			<if test="borrow_id != null">
+				and a.borrow_id = #{borrow_id}
+			</if>
+			<if test="borrow_state != null">
+				and a.borrow_state = #{borrow_state}
+			</if>
+			<if test="create_time != null">
+				and a.create_time = #{create_time}
+			</if>
+			<if test="map.keyword != null">
+				and a.keyword like concat('%',#{map.keyword},'%')
+			</if>
+			<if test="map.name != null">
+				and b.name like concat('%',#{map.name},'%')
+			</if>
+			<if test="map.author != null">
+				and b.author like concat('%',#{map.author},'%')
+			</if>
+			<if test="map.type_id != null">
+				and b.type_id = #{map.type_id}
+			</if>
+			<if test="map.creator_id != null">
+				and d.creator_id = #{map.creator_id}
+			</if>
+			<if test="map.ids != null">
+				and a.id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+		<if test="map.sort != null">
+			order by a.id desc
+		</if>
+	</sql>
+
+	<select id="selectBookBorrowRecord" resultType="BookBorrowRecord" parameterType="BookBorrowRecord">
+		select a.*,b.name,b.code,b.image_url,c.name as type_name,d.create_time as borrow_time,d.verify_state,
+		d.return_time,e.real_name as creator_name,f.real_name as verify_user_name,d.verify_time,d.verify_content from book_borrow_record a 
+		left join book b on a.book_id=b.id left join book_type c on b.type_id=c.id 
+		left join book_borrow d on a.borrow_id=d.id left join user e on d.creator_id=e.id
+		left join user f on d.verify_user_id=f.id
+		<include refid="sf-bookBorrowRecord" />
+	</select>
+	
+	<select id="selectBookBorrowRecordList" resultType="BookBorrowRecord" parameterType="BookBorrowRecord">
+		select a.* from book_borrow_record a
+		<include refid="sf-bookBorrowRecord" />
+	</select>
+	
+	<select id="selectBookBorrowRecordCount" resultType="int" parameterType="BookBorrowRecord">
+		select count(1) from book_borrow_record a left join book b on a.book_id=b.id left join book_borrow d on a.borrow_id=d.id
+		<include refid="sf-bookBorrowRecord" />
+	</select>
+	
+	<select id="selectBookBorrowRecordPageList" resultType="BookBorrowRecord" parameterType="BookBorrowRecord">
+		select a.*,b.name,b.code,c.name as type_name,d.create_time as borrow_time,d.return_time,e.real_name as creator_name,d.verify_state from book_borrow_record a 
+		left join book b on a.book_id=b.id left join book_type c on b.type_id=c.id 
+		left join book_borrow d on a.borrow_id=d.id left join user e on d.creator_id=e.id
+		<include refid="sf-bookBorrowRecord" />
+		limit #{map.startIndex},#{map.pageSize}
+	</select>
+	
+	<select id="selectBookBorrowRecordSort" resultType="int" parameterType="BookBorrowRecord">
+		select max(a.id) from book_borrow_record a
+		<include refid="sf-bookBorrowRecord" />
+	</select>
+
+	<insert id="insertBookBorrowRecord" parameterType="BookBorrowRecord" useGeneratedKeys="true"
+		keyProperty="id"> 
+		<![CDATA[insert into book_borrow_record (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">id,</if> 
+			<if test="book_id != null">book_id,</if> 
+			<if test="borrow_id != null">borrow_id,</if> 
+			<if test="borrow_state != null">borrow_state,</if> 
+			<if test="create_time != null">create_time,</if> 
+		</trim>
+		<![CDATA[) values (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">#{id},</if> 
+			<if test="book_id != null">#{book_id},</if> 
+			<if test="borrow_id != null">#{borrow_id},</if> 
+			<if test="borrow_state != null">#{borrow_state},</if> 
+			<if test="create_time != null">#{create_time},</if> 
+		</trim>
+		<![CDATA[)]]>
+	</insert>
+
+	<update id="updateBookBorrowRecord" parameterType="BookBorrowRecord">
+		update book_borrow_record
+		<set>
+			<if test="book_id != null">book_id=#{book_id},</if>
+			<if test="borrow_id != null">borrow_id=#{borrow_id},</if>
+			<if test="borrow_state != null">borrow_state=#{borrow_state},</if>
+			<if test="create_time != null">create_time=#{create_time},</if>
+		</set>
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</update>
+	
+	<delete id="deleteBookBorrowRecord" parameterType="BookBorrowRecord">
+		delete from book_borrow_record 
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</delete>
+</mapper>

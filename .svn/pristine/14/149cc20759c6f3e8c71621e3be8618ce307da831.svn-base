@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="entity.RpFile">  
+	<resultMap id="rpFileResult" type="RpFile">
+		<result column="rpf_id" property="id" jdbcType="DECIMAL" />
+		<result column="rpf_rp_id" property="rp_id" jdbcType="DECIMAL" />
+		<result column="rpf_type" property="type" jdbcType="DECIMAL" />
+		<result column="rpf_file_id" property="file_id" jdbcType="DECIMAL" />
+		<result column="rpf_url" property="url" jdbcType="VARCHAR" />
+		<result column="rpf_name" property="name" jdbcType="VARCHAR" />
+		<result column="rpf_sort" property="sort" jdbcType="DECIMAL" />
+		<result column="rpf_create_time" property="create_time"  />
+    </resultMap>
+
+	<sql id="sf-rpFile">
+		<where>
+			<if test="id != null">
+				and a.id = #{id}
+			</if>
+			<if test="rp_id != null">
+				and a.rp_id = #{rp_id}
+			</if>
+			<if test="type != null">
+				and a.type = #{type}
+			</if>
+			<if test="file_id != null">
+				and a.file_id = #{file_id}
+			</if>
+			<if test="url != null">
+				and a.url = #{url}
+			</if>
+			<if test="name != null">
+				and a.name = #{name}
+			</if>
+			<if test="sort != null">
+				and a.sort = #{sort}
+			</if>
+			<if test="create_time != null">
+				and a.create_time = #{create_time}
+			</if>
+			<if test="map.keyword != null">
+				and a.keyword like concat('%',#{map.keyword},'%')
+			</if>
+			<if test="map.ids != null">
+				and a.id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+		<if test="map.sort != null">
+			order by a.id desc
+		</if>
+	</sql>
+
+	<select id="selectRpFile" resultType="RpFile" parameterType="RpFile">
+		select a.* from rp_file a
+		<include refid="sf-rpFile" />
+	</select>
+	
+	<select id="selectRpFileList" resultType="RpFile" parameterType="RpFile">
+		select a.* from rp_file a
+		<include refid="sf-rpFile" />
+	</select>
+	
+	<select id="selectRpFileCount" resultType="int" parameterType="RpFile">
+		select count(1) from rp_file a
+		<include refid="sf-rpFile" />
+	</select>
+	
+	<select id="selectRpFilePageList" resultType="RpFile" parameterType="RpFile">
+		select a.* from rp_file a
+		<include refid="sf-rpFile" />
+		limit #{map.startIndex},#{map.pageSize}
+	</select>
+	
+	<select id="selectRpFileSort" resultType="int" parameterType="RpFile">
+		select max(a.id) from rp_file a
+		<include refid="sf-rpFile" />
+	</select>
+
+	<insert id="insertRpFile" parameterType="RpFile" useGeneratedKeys="true"
+		keyProperty="id"> 
+		<![CDATA[insert into rp_file (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">id,</if> 
+			<if test="rp_id != null">rp_id,</if> 
+			<if test="type != null">type,</if> 
+			<if test="file_id != null">file_id,</if> 
+			<if test="url != null">url,</if> 
+			<if test="name != null">name,</if> 
+			<if test="sort != null">sort,</if> 
+			<if test="create_time != null">create_time,</if> 
+		</trim>
+		<![CDATA[) values (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">#{id},</if> 
+			<if test="rp_id != null">#{rp_id},</if> 
+			<if test="type != null">#{type},</if> 
+			<if test="file_id != null">#{file_id},</if> 
+			<if test="url != null">#{url},</if> 
+			<if test="name != null">#{name},</if> 
+			<if test="sort != null">#{sort},</if> 
+			<if test="create_time != null">#{create_time},</if> 
+		</trim>
+		<![CDATA[)]]>
+	</insert>
+
+	<update id="updateRpFile" parameterType="RpFile">
+		update rp_file
+		<set>
+			<if test="rp_id != null">rp_id=#{rp_id},</if>
+			<if test="type != null">type=#{type},</if>
+			<if test="file_id != null">file_id=#{file_id},</if>
+			<if test="url != null">url=#{url},</if>
+			<if test="name != null">name=#{name},</if>
+			<if test="sort != null">sort=#{sort},</if>
+			<if test="create_time != null">create_time=#{create_time},</if>
+		</set>
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</update>
+	
+	<delete id="deleteRpFile" parameterType="RpFile">
+		delete from rp_file 
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</delete>
+</mapper>

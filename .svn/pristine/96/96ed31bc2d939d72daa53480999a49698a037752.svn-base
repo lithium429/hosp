@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="entity.AdviceTopic">  
+	<resultMap id="adviceTopicResult" type="AdviceTopic">
+		<result column="id" property="id" jdbcType="DECIMAL" />
+		<result column="name" property="name" jdbcType="VARCHAR" />
+		<result column="sort" property="sort" jdbcType="DECIMAL" />
+		<result column="create_time" property="create_time"  />
+    </resultMap>
+
+	<sql id="sf-adviceTopic">
+		<where>
+			<if test="id != null">
+				and a.id = #{id}
+			</if>
+			<if test="name != null">
+				and a.name = #{name}
+			</if>
+			<if test="sort != null">
+				and a.sort = #{sort}
+			</if>
+			<if test="create_time != null">
+				and a.create_time = #{create_time}
+			</if>
+			<if test="map.keyword != null">
+				and a.keyword like concat('%',#{map.keyword},'%')
+			</if>
+			<if test="map.name != null">
+				and a.name like concat('%',#{map.name},'%')
+			</if>
+			<if test="map.name_valid != null">
+				and a.id !=#{map.id} and a.name =#{map.name}
+			</if>
+			<if test="map.ids != null">
+				and a.id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+		<if test="map.sort_order != null">
+			order by a.sort desc
+		</if>
+	</sql>
+
+	<select id="selectAdviceTopic" resultType="AdviceTopic" parameterType="AdviceTopic">
+		select a.* from advice_topic a
+		<include refid="sf-adviceTopic" />
+	</select>
+	
+	<select id="selectAdviceTopicList" resultType="AdviceTopic" parameterType="AdviceTopic">
+		select a.* from advice_topic a
+		<include refid="sf-adviceTopic" />
+	</select>
+	
+	<select id="selectAdviceTopicCount" resultType="int" parameterType="AdviceTopic">
+		select count(1) from advice_topic a
+		<include refid="sf-adviceTopic" />
+	</select>
+	
+	<select id="selectAdviceTopicPageList" resultType="AdviceTopic" parameterType="AdviceTopic">
+		select a.* from advice_topic a
+		<include refid="sf-adviceTopic" />
+		limit #{map.startIndex},#{map.pageSize}
+	</select>
+	
+	<select id="selectAdviceTopicSort" resultType="int" parameterType="AdviceTopic">
+		select max(a.sort) from advice_topic a
+		<include refid="sf-adviceTopic" />
+	</select>
+
+	<insert id="insertAdviceTopic" parameterType="AdviceTopic" useGeneratedKeys="true"
+		keyProperty="id"> 
+		<![CDATA[insert into advice_topic (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">id,</if> 
+			<if test="name != null">name,</if> 
+			<if test="sort != null">sort,</if> 
+			<if test="create_time != null">create_time,</if> 
+		</trim>
+		<![CDATA[) values (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">#{id},</if> 
+			<if test="name != null">#{name},</if> 
+			<if test="sort != null">#{sort},</if> 
+			<if test="create_time != null">#{create_time},</if> 
+		</trim>
+		<![CDATA[)]]>
+	</insert>
+
+	<update id="updateAdviceTopic" parameterType="AdviceTopic">
+		update advice_topic
+		<set>
+			<if test="name != null">name=#{name},</if>
+			<if test="sort != null">sort=#{sort},</if>
+			<if test="create_time != null">create_time=#{create_time},</if>
+		</set>
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</update>
+	
+	<delete id="deleteAdviceTopic" parameterType="AdviceTopic">
+		delete from advice_topic 
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</delete>
+</mapper>

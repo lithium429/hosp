@@ -1,0 +1,23 @@
+package com.xz.oa.core.dao.mybatis.workflow;
+
+import javax.annotation.Resource;
+
+import org.apache.ibatis.session.SqlSession;
+import org.springframework.stereotype.Repository;
+
+import com.xz.oa.core.dao.workflow.ActivitiDao;
+
+@Repository
+public class ActivitiDaoSqlMapImpl implements ActivitiDao {
+
+	@Resource
+	protected SqlSession sqlSessionDefault;
+
+	/*
+	 * 流程完成后清理detail表中的表单类型数据 (java.lang.String)
+	 */
+	public int deleteFormPropertyByProcessInstanceId(String processInstanceId) {
+		int i = sqlSessionDefault.delete("entity.Activiti.deleteDetail", processInstanceId);
+		return i;
+	}
+}

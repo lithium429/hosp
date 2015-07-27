@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="entity.StaffContractType">  
+	<resultMap id="staffContractTypeResult" type="StaffContractType">
+		<result column="id" property="id" jdbcType="DECIMAL" />
+		<result column="name" property="name" jdbcType="VARCHAR" />
+		<result column="sort" property="sort" jdbcType="DECIMAL" />
+    </resultMap>
+
+	<sql id="sf-staffContractType">
+		<where>
+			<if test="id != null">
+				and a.id = #{id}
+			</if>
+			<if test="name != null">
+				and a.name = #{name}
+			</if>
+			<if test="sort != null">
+				and a.sort = #{sort}
+			</if>
+			<if test="map.keyword != null">
+				and a.keyword like concat('%',#{map.keyword},'%')
+			</if>
+			<if test="map.name != null">
+				and a.name like concat('%',#{map.name},'%')
+			</if>
+			<if test="map.name_valid != null">
+				and a.id !=#{map.id} and a.name =#{map.name_valid}
+			</if>
+			<if test="map.ids != null">
+				and a.id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+		<if test="map.sort_order != null">
+			order by a.sort desc
+		</if>
+	</sql>
+
+	<select id="selectStaffContractType" resultType="StaffContractType" parameterType="StaffContractType">
+		select a.* from staff_contract_type a
+		<include refid="sf-staffContractType" />
+	</select>
+	
+	<select id="selectStaffContractTypeList" resultType="StaffContractType" parameterType="StaffContractType">
+		select a.* from staff_contract_type a
+		<include refid="sf-staffContractType" />
+	</select>
+	
+	<select id="selectStaffContractTypeCount" resultType="int" parameterType="StaffContractType">
+		select count(1) from staff_contract_type a
+		<include refid="sf-staffContractType" />
+	</select>
+	
+	<select id="selectStaffContractTypePageList" resultType="StaffContractType" parameterType="StaffContractType">
+		select a.* from staff_contract_type a
+		<include refid="sf-staffContractType" />
+		limit #{map.startIndex},#{map.pageSize}
+	</select>
+	
+	<select id="selectStaffContractTypeSort" resultType="int" parameterType="StaffContractType">
+		select max(a.sort) from staff_contract_type a
+		<include refid="sf-staffContractType" />
+	</select>
+
+	<insert id="insertStaffContractType" parameterType="StaffContractType" useGeneratedKeys="true"
+		keyProperty="id"> 
+		<![CDATA[insert into staff_contract_type (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">id,</if> 
+			<if test="name != null">name,</if> 
+			<if test="sort != null">sort,</if> 
+		</trim>
+		<![CDATA[) values (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">#{id},</if> 
+			<if test="name != null">#{name},</if> 
+			<if test="sort != null">#{sort},</if> 
+		</trim>
+		<![CDATA[)]]>
+	</insert>
+
+	<update id="updateStaffContractType" parameterType="StaffContractType">
+		update staff_contract_type
+		<set>
+			<if test="name != null">name=#{name},</if>
+			<if test="sort != null">sort=#{sort},</if>
+		</set>
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</update>
+	
+	<delete id="deleteStaffContractType" parameterType="StaffContractType">
+		delete from staff_contract_type 
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</delete>
+</mapper>

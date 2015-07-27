@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<taglib version="2.0" xmlns="http://java.sun.com/xml/ns/j2ee"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-jsptaglibrary_2_0.xsd">
+	<tlib-version>1.0</tlib-version>
+	<short-name>pubfun</short-name>
+	<!-- 定义该标签库的URI -->
+	<uri>http://www.ahjyrj.com/pubfun</uri>
+	<!-- 映射通用函数为EL表达式所用 -->
+	<function>
+		<name>rolePowerSel</name>
+		<function-class>com.xz.oa.core.service.security.RoleMenuService</function-class>
+		<function-signature>java.lang.Boolean rolePowerSel(java.util.List,java.lang.Integer,java.lang.Boolean)</function-signature>
+	</function>
+	<function>
+		<name>containsValue</name>
+		<function-class>com.xz.base.utils.StringUtil</function-class>
+		<function-signature>java.lang.Boolean containsValue(java.lang.String, java.lang.String)</function-signature>
+	</function>
+	<function>
+		<name>getDayOfWeek</name>
+		<function-class>com.xz.base.utils.DateUtil</function-class>
+		<function-signature>java.lang.Integer getDayOfWeek(java.lang.Integer, java.lang.Integer, java.lang.Integer)</function-signature>
+	</function>
+	<function>
+		<name>getDayOfWeekForText</name>
+		<function-class>com.xz.base.utils.DateUtil</function-class>
+		<function-signature>java.lang.String getDayOfWeekForText(java.lang.Integer, java.lang.Integer, java.lang.Integer)</function-signature>
+	</function>
+	<function>
+		<name>getTimeTypeByDayOfWeek</name>
+		<function-class>com.xz.base.utils.BizUtil</function-class>
+		<function-signature>java.lang.Byte getTimeTypeByDayOfWeek(java.lang.Integer)</function-signature>
+	</function>
+	<function>
+		<name>gainSchedulingId</name>
+		<function-class>com.xz.oa.core.service.scheduling.SchedulingService</function-class>
+		<function-signature>java.lang.Integer gainSchedulingId(java.lang.Integer, java.lang.Byte, java.lang.Byte, java.util.Date, java.util.Date, java.util.List)</function-signature>
+	</function>
+	<function>
+		<name>gainSchedulingUsers</name>
+		<function-class>com.xz.oa.core.service.scheduling.SchedulingService</function-class>
+		<function-signature>java.util.List gainSchedulingUsers(java.lang.Integer, java.util.List)</function-signature>
+	</function>
+	<function>
+		<name>gainTimeList</name>
+		<function-class>com.xz.oa.core.service.scheduling.SchedulingService</function-class>
+		<function-signature>java.util.List gainTimeList(java.lang.Integer, java.lang.Byte, java.lang.Byte, java.util.List, java.util.List)</function-signature>
+	</function>
+	<function>
+		<name>judgeRoleMenu</name>
+		<function-class>com.xz.oa.core.web.controller.security.RoleMenuController</function-class>
+		<function-signature>java.lang.Boolean judgeRoleMenu(java.util.List,java.lang.String)</function-signature>
+	</function>
+	<function>
+		<name>buildTreeName</name>
+		<function-class>com.xz.base.utils.StringUtil</function-class>
+		<function-signature>java.lang.String buildTreeName(java.lang.String, java.lang.Integer)</function-signature>
+	</function>
+	<function>
+		<name>gainSpecifiedElement</name>
+		<function-class>com.xz.base.utils.StringUtil</function-class>
+		<function-signature>java.lang.String gainSpecifiedElement(java.lang.String, java.lang.String, java.lang.Integer)</function-signature>
+	</function>
+	<function>
+		<name>subStringWithEllipsis</name>
+		<function-class>com.xz.base.utils.StringUtil</function-class>
+		<function-signature>java.lang.String subStringWithEllipsis(java.lang.String, java.lang.Integer)</function-signature>
+	</function>
+</taglib>

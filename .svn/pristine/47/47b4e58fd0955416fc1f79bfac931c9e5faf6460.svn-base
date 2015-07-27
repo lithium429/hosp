@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="entity.ForumUserFav">  
+	<resultMap id="forumUserFavResult" type="ForumUserFav">
+		<result column="id" property="id" jdbcType="DECIMAL" />
+		<result column="thread_id" property="thread_id" jdbcType="DECIMAL" />
+		<result column="user_id" property="user_id" jdbcType="DECIMAL" /> 
+    </resultMap>
+
+	<sql id="sf-forumUserFav">
+		<where>
+			<if test="id != null">
+				and a.id = #{id}
+			</if>
+			<if test="thread_id != null">
+				and a.thread_id = #{thread_id}
+			</if>
+			<if test="user_id != null">
+				and a.user_id = #{user_id}
+			</if> 
+			<if test="map.keyword != null">
+				and a.keyword like concat('%',#{map.keyword},'%')
+			</if>
+			<if test="map.ids != null">
+				and a.id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+		<if test="map.sort != null">
+			order by a.id desc
+		</if>
+	</sql>
+
+	<select id="selectForumUserFav" resultType="ForumUserFav" parameterType="ForumUserFav">
+		select a.* from forum_user_fav a
+		<include refid="sf-forumUserFav" />
+	</select>
+	
+	<select id="selectForumUserFavList" resultType="ForumUserFav" parameterType="ForumUserFav">
+		select a.* from forum_user_fav a
+		<include refid="sf-forumUserFav" />
+	</select>
+	
+	<select id="selectForumUserFavCount" resultType="int" parameterType="ForumUserFav">
+		select count(1) from forum_user_fav a
+		<include refid="sf-forumUserFav" />
+	</select>
+	
+	<select id="selectForumUserFavPageList" resultType="ForumUserFav" parameterType="ForumUserFav">
+		select a.* from forum_user_fav a
+		<include refid="sf-forumUserFav" />
+		limit #{map.startIndex},#{map.pageSize}
+	</select>
+
+	<insert id="insertForumUserFav" parameterType="ForumUserFav" useGeneratedKeys="true"
+		keyProperty="id"> 
+		<![CDATA[insert into forum_user_fav (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">id,</if> 
+			<if test="thread_id != null">thread_id,</if> 
+			<if test="user_id != null">user_id,</if>  
+		</trim>
+		<![CDATA[) values (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">#{id},</if> 
+			<if test="thread_id != null">#{thread_id},</if> 
+			<if test="user_id != null">#{user_id},</if>  
+		</trim>
+		<![CDATA[)]]>
+	</insert>
+
+	<update id="updateForumUserFav" parameterType="ForumUserFav">
+		update forum_user_fav
+		<set>
+			<if test="thread_id != null">thread_id=#{thread_id},</if>
+			<if test="user_id != null">user_id=#{user_id},</if> 
+		</set>
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</update>
+	
+	<delete id="deleteForumUserFav" parameterType="ForumUserFav">
+		delete from forum_user_fav 
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="user_id != null">
+				and user_id = #{user_id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+			<if test="map.thread_ids != null">
+				and thread_id in
+				<foreach collection="map.thread_ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</delete>
+</mapper>

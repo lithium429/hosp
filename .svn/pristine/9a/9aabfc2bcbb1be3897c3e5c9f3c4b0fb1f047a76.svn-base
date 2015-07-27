@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="entity.AddressUser">  
+
+	<sql id="sf-addressUser">
+		<where>
+			<if test="id != null">
+				and a.id = #{id}
+			</if>
+			<if test="address_id != null">
+				and a.address_id = #{address_id}
+			</if>
+			<if test="user_id != null">
+				and a.user_id = #{user_id}
+			</if>
+			<if test="map.keyword != null">
+				and a.keyword like concat('%',#{map.keyword},'%')
+			</if>
+			<if test="map.ids != null">
+				and a.id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+		<if test="map.sort != null">
+			order by a.id desc
+		</if>
+	</sql>
+
+	<select id="selectAddressUser" resultType="AddressUser" parameterType="AddressUser">
+		select a.* from address_user a
+		<include refid="sf-addressUser" />
+	</select>
+	
+	<select id="selectAddressUserList" resultType="AddressUser" parameterType="AddressUser">
+		select a.* from address_user a
+		<include refid="sf-addressUser" />
+	</select>
+	
+	<select id="selectAddressUserCount" resultType="int" parameterType="AddressUser">
+		select count(1) from address_user a
+		<include refid="sf-addressUser" />
+	</select>
+	
+	<select id="selectAddressUserPageList" resultType="AddressUser" parameterType="AddressUser">
+		select a.* from address_user a
+		<include refid="sf-addressUser" />
+		limit #{map.startIndex},#{map.pageSize}
+	</select>
+	
+	<select id="selectAddressUserSort" resultType="int" parameterType="AddressUser">
+		select max(a.id) from address_user a
+		<include refid="sf-addressUser" />
+	</select>
+
+	<insert id="insertAddressUser" parameterType="AddressUser" useGeneratedKeys="true"
+		keyProperty="id"> 
+		<![CDATA[insert into address_user (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">id,</if> 
+			<if test="address_id != null">address_id,</if> 
+			<if test="user_id != null">user_id,</if> 
+		</trim>
+		<![CDATA[) values (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">#{id},</if> 
+			<if test="address_id != null">#{address_id},</if> 
+			<if test="user_id != null">#{user_id},</if> 
+		</trim>
+		<![CDATA[)]]>
+	</insert>
+
+	<update id="updateAddressUser" parameterType="AddressUser">
+		update address_user
+		<set>
+			<if test="address_id != null">address_id=#{address_id},</if>
+			<if test="user_id != null">user_id=#{user_id},</if>
+		</set>
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</update>
+	
+	<delete id="deleteAddressUser" parameterType="AddressUser">
+		delete from address_user 
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="address_id != null">
+				and address_id = #{address_id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</delete>
+</mapper>

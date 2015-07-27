@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="entity.DirectoryDept">  
+	<resultMap id="directoryDeptResult" type="DirectoryDept">
+		<result column="id" property="id" jdbcType="DECIMAL" />
+		<result column="directory_id" property="directory_id" jdbcType="DECIMAL" />
+		<result column="dept_id" property="dept_id" jdbcType="DECIMAL" />
+    </resultMap>
+
+	<sql id="sf-directoryDept">
+		<where>
+			<if test="id != null">
+				and a.id = #{id}
+			</if>
+			<if test="directory_id != null">
+				and a.directory_id = #{directory_id}
+			</if>
+			<if test="dept_id != null">
+				and a.dept_id = #{dept_id}
+			</if>
+			<if test="map.keyword != null">
+				and a.keyword like concat('%',#{map.keyword},'%')
+			</if>
+			<if test="map.ids != null">
+				and a.id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+		<if test="map.sort != null">
+			order by a.id desc
+		</if>
+	</sql>
+
+	<select id="selectDirectoryDept" resultType="DirectoryDept" parameterType="DirectoryDept">
+		select a.* from directory_dept a
+		<include refid="sf-directoryDept" />
+	</select>
+	
+	<select id="selectDirectoryDeptList" resultType="DirectoryDept" parameterType="DirectoryDept">
+		select a.* from directory_dept a
+		<include refid="sf-directoryDept" />
+	</select>
+	
+	<select id="selectDirectoryDeptCount" resultType="int" parameterType="DirectoryDept">
+		select count(1) from directory_dept a
+		<include refid="sf-directoryDept" />
+	</select>
+	
+	<select id="selectDirectoryDeptPageList" resultType="DirectoryDept" parameterType="DirectoryDept">
+		select a.* from directory_dept a
+		<include refid="sf-directoryDept" />
+		limit #{map.startIndex},#{map.pageSize}
+	</select>
+
+	<insert id="insertDirectoryDept" parameterType="DirectoryDept" useGeneratedKeys="true"
+		keyProperty="id"> 
+		<![CDATA[insert into directory_dept (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">id,</if> 
+			<if test="directory_id != null">directory_id,</if> 
+			<if test="dept_id != null">dept_id,</if> 
+		</trim>
+		<![CDATA[) values (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">#{id},</if> 
+			<if test="directory_id != null">#{directory_id},</if> 
+			<if test="dept_id != null">#{dept_id},</if> 
+		</trim>
+		<![CDATA[)]]>
+	</insert>
+
+	<update id="updateDirectoryDept" parameterType="DirectoryDept">
+		update directory_dept
+		<set>
+			<if test="directory_id != null">directory_id=#{directory_id},</if>
+			<if test="dept_id != null">dept_id=#{dept_id},</if>
+		</set>
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</update>
+	
+	<delete id="deleteDirectoryDept" parameterType="DirectoryDept">
+		delete from directory_dept 
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="map.directory_ids != null">
+				and directory_id in
+				<foreach collection="map.directory_ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</delete>
+</mapper>

@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="entity.SmsTpl">  
+	<resultMap id="smsTplResult" type="SmsTpl">
+		<result column="id" property="id" jdbcType="DECIMAL" />
+		<result column="type" property="type" jdbcType="DECIMAL" />
+		<result column="content" property="content" jdbcType="VARCHAR" />
+		<result column="create_time" property="create_time"  />
+    </resultMap>
+
+	<sql id="sf-smsTpl">
+		<where>
+			<if test="id != null">
+				and a.id = #{id}
+			</if>
+			<if test="type != null">
+				and a.type = #{type}
+			</if>
+			<if test="content != null">
+				and a.content = #{content}
+			</if>
+			<if test="create_time != null">
+				and a.create_time = #{create_time}
+			</if>
+			<if test="map.keyword != null">
+				and a.keyword like concat('%',#{map.keyword},'%')
+			</if>
+			<if test="map.type_valid != null">
+				and a.id !=#{map.id} and a.type =#{map.type}
+			</if>
+			<if test="map.ids != null">
+				and a.id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+		<if test="map.sort != null">
+			order by a.id desc
+		</if>
+	</sql>
+
+	<select id="selectSmsTpl" resultType="SmsTpl" parameterType="SmsTpl">
+		select a.* from sms_tpl a
+		<include refid="sf-smsTpl" />
+	</select>
+	
+	<select id="selectSmsTplList" resultType="SmsTpl" parameterType="SmsTpl">
+		select a.* from sms_tpl a
+		<include refid="sf-smsTpl" />
+	</select>
+	
+	<select id="selectSmsTplCount" resultType="int" parameterType="SmsTpl">
+		select count(1) from sms_tpl a
+		<include refid="sf-smsTpl" />
+	</select>
+	
+	<select id="selectSmsTplPageList" resultType="SmsTpl" parameterType="SmsTpl">
+		select a.* from sms_tpl a
+		<include refid="sf-smsTpl" />
+		limit #{map.startIndex},#{map.pageSize}
+	</select>
+	
+	<select id="selectSmsTplSort" resultType="int" parameterType="SmsTpl">
+		select max(a.id) from sms_tpl a
+		<include refid="sf-smsTpl" />
+	</select>
+
+	<insert id="insertSmsTpl" parameterType="SmsTpl" useGeneratedKeys="true"
+		keyProperty="id"> 
+		<![CDATA[insert into sms_tpl (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">id,</if> 
+			<if test="type != null">type,</if> 
+			<if test="content != null">content,</if> 
+			<if test="create_time != null">create_time,</if> 
+		</trim>
+		<![CDATA[) values (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">#{id},</if> 
+			<if test="type != null">#{type},</if> 
+			<if test="content != null">#{content},</if> 
+			<if test="create_time != null">#{create_time},</if> 
+		</trim>
+		<![CDATA[)]]>
+	</insert>
+
+	<update id="updateSmsTpl" parameterType="SmsTpl">
+		update sms_tpl
+		<set>
+			<if test="type != null">type=#{type},</if>
+			<if test="content != null">content=#{content},</if>
+			<if test="create_time != null">create_time=#{create_time},</if>
+		</set>
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</update>
+	
+	<delete id="deleteSmsTpl" parameterType="SmsTpl">
+		delete from sms_tpl 
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</delete>
+</mapper>

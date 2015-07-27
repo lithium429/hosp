@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="entity.UnionnetSms">
+	<parameterMap type="UnionnetSms" id="unionnetSmsMap">
+		<parameter property="tel" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="msg" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="from" jdbcType="VARCHAR" mode="IN" />
+		<parameter property="grade" jdbcType="INTEGER" mode="IN" /> 
+	</parameterMap>
+	
+	<update id="insertUnionnetSms" parameterMap="unionnetSmsMap" statementType="CALLABLE">
+		{call proc_getSMS(?, ?, ?, ?)}
+	</update>
+</mapper>

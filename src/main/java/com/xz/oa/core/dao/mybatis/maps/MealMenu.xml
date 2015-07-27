@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="entity.MealMenu">  
+	<resultMap id="mealMenuResult" type="MealMenu">
+		<result column="id" property="id" jdbcType="DECIMAL" />
+		<result column="day_of_week" property="day_of_week" jdbcType="DECIMAL" />
+		<result column="meal_date" property="meal_date"  />
+		<result column="state" property="state" jdbcType="DECIMAL" />
+		<result column="time_type" property="time_type" jdbcType="DECIMAL" />
+		<result column="food_type" property="food_type" jdbcType="DECIMAL" />
+		<result column="meat_type" property="meat_type" jdbcType="DECIMAL" />
+		<result column="food_name" property="food_name" jdbcType="VARCHAR" />
+		<result column="sort" property="sort" jdbcType="DECIMAL" />
+		<result column="creator_id" property="creator_id" jdbcType="DECIMAL" />
+		<result column="create_time" property="create_time"  />
+    </resultMap>
+
+	<sql id="sf-mealMenu">
+		<where>
+			<if test="id != null">
+				and a.id = #{id}
+			</if>
+			<if test="day_of_week != null">
+				and a.day_of_week = #{day_of_week}
+			</if>
+			<if test="meal_date != null">
+				and a.meal_date = #{meal_date}
+			</if>
+			<if test="state != null">
+				and a.state = #{state}
+			</if>
+			<if test="time_type != null">
+				and a.time_type = #{time_type}
+			</if>
+			<if test="food_type != null">
+				and a.food_type = #{food_type}
+			</if>
+			<if test="meat_type != null">
+				and a.meat_type = #{meat_type}
+			</if>
+			<if test="food_name != null">
+				and a.food_name = #{food_name}
+			</if>
+			<if test="sort != null">
+				and a.sort = #{sort}
+			</if>
+			<if test="creator_id != null">
+				and a.creator_id = #{creator_id}
+			</if>
+			<if test="create_time != null">
+				and a.create_time = #{create_time}
+			</if>
+			<if test="map.keyword != null">
+				and a.keyword like concat('%',#{map.keyword},'%')
+			</if>
+			<if test="map.meal_date_min != null">
+				and a.meal_date >= #{map.meal_date_min}
+			</if>
+			<if test="map.meal_date_max != null">
+				and #{map.meal_date_max} >= a.meal_date
+			</if>
+			<if test="map.user_id != null">
+				and b.user_id = #{map.user_id}
+			</if>
+			<if test="map.ids != null">
+				and a.id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+		<if test="map.sort_order != null">
+			order by a.sort
+		</if>
+	</sql>
+	
+	<sql id="sf-mealMenu-addUp">
+		<where>
+			<if test="id != null">
+				and a.id = #{id}
+			</if>
+			<if test="day_of_week != null">
+				and a.day_of_week = #{day_of_week}
+			</if>
+			<if test="meal_date != null">
+				and a.meal_date = #{meal_date}
+			</if>
+			<if test="state != null">
+				and a.state = #{state}
+			</if>
+			<if test="time_type != null">
+				and a.time_type = #{time_type}
+			</if>
+			<if test="food_type != null">
+				and a.food_type = #{food_type}
+			</if>
+			<if test="meat_type != null">
+				and a.meat_type = #{meat_type}
+			</if>
+			<if test="food_name != null">
+				and a.food_name = #{food_name}
+			</if>
+			<if test="sort != null">
+				and a.sort = #{sort}
+			</if>
+			<if test="creator_id != null">
+				and a.creator_id = #{creator_id}
+			</if>
+			<if test="create_time != null">
+				and a.create_time = #{create_time}
+			</if>
+			<if test="map.keyword != null">
+				and a.keyword like concat('%',#{map.keyword},'%')
+			</if>
+			<if test="map.meal_date_min != null">
+				and a.meal_date >= #{map.meal_date_min}
+			</if>
+			<if test="map.meal_date_max != null">
+				and #{map.meal_date_max} >= a.meal_date
+			</if>
+			<if test="map.user_id != null">
+				and b.user_id = #{map.user_id}
+			</if>
+			<if test="map.dept_id != null">
+				and c.dept_id = #{map.dept_id}
+			</if>
+			<if test="map.parent_id != null">
+				and d.parent_id = #{map.parent_id}
+			</if>
+			<if test="map.ids != null">
+				and a.id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>		
+		<if test="map.sort_order != null">
+			order by a.sort
+		</if>
+	</sql>
+
+	<select id="selectMealMenu" resultType="MealMenu" parameterType="MealMenu">
+		select a.* from meal_menu a
+		<include refid="sf-mealMenu" />
+	</select>
+	
+	<select id="selectMealMenuList" resultType="MealMenu" parameterType="MealMenu">
+		select a.* from meal_menu a
+		<include refid="sf-mealMenu" />
+	</select>
+	
+	<select id="selectMealMenuList_eat" resultType="MealMenu" parameterType="MealMenu">
+		select a.*,b.order_count,b.id as order_id from meal_menu a left join meal_user b on a.id=b.menu_id
+		<include refid="sf-mealMenu" />
+	</select>
+	
+	<select id="selectMealMenuList_addUp" resultType="MealMenuAddUp" parameterType="MealMenuAddUp">
+		SELECT r.meat_types,r.count_nums,r.total_count,r.food_names from
+		(SELECT GROUP_CONCAT(CAST(t.meat_type AS char(3))) as meat_types,GROUP_CONCAT(CAST(t.count_num AS char(3))) as  count_nums,SUM(t.count_num) as total_count ,
+		GROUP_CONCAT(t.food_name) as food_names,t.meal_date,t.time_type from 
+		(select SUM(b.order_count) as count_num,a.* from meal_menu a left join meal_user b on a.id=b.menu_id 
+		left join user c on b.user_id=c.id left join department d on c.dept_id=d.id  <include refid="sf-mealMenu-addUp" />
+		GROUP BY a.id) as t GROUP BY t.time_type,t.meal_date) as r order by r.meal_date ,r.time_type
+	</select>
+	
+	<select id="selectMealMenuCount" resultType="int" parameterType="MealMenu">
+		select count(1) from meal_menu a
+		<include refid="sf-mealMenu" />
+	</select>
+	
+	<select id="selectMealMenuPageList" resultType="MealMenu" parameterType="MealMenu">
+		select a.* from meal_menu a
+		<include refid="sf-mealMenu" />
+		limit #{map.startIndex},#{map.pageSize}
+	</select>
+	
+	<select id="selectMealMenuSort" resultType="int" parameterType="MealMenu">
+		select max(a.sort) from meal_menu a
+		<include refid="sf-mealMenu" />
+	</select>
+
+	<insert id="insertMealMenu" parameterType="MealMenu" useGeneratedKeys="true"
+		keyProperty="id"> 
+		<![CDATA[insert into meal_menu (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">id,</if> 
+			<if test="day_of_week != null">day_of_week,</if> 
+			<if test="meal_date != null">meal_date,</if> 
+			<if test="state != null">state,</if> 
+			<if test="time_type != null">time_type,</if> 
+			<if test="food_type != null">food_type,</if> 
+			<if test="meat_type != null">meat_type,</if> 
+			<if test="food_name != null">food_name,</if> 
+			<if test="sort != null">sort,</if> 
+			<if test="creator_id != null">creator_id,</if> 
+			<if test="create_time != null">create_time,</if> 
+		</trim>
+		<![CDATA[) values (]]>
+		<trim suffixOverrides=",">  
+			<if test="id != null">#{id},</if> 
+			<if test="day_of_week != null">#{day_of_week},</if> 
+			<if test="meal_date != null">#{meal_date},</if> 
+			<if test="state != null">#{state},</if> 
+			<if test="time_type != null">#{time_type},</if> 
+			<if test="food_type != null">#{food_type},</if> 
+			<if test="meat_type != null">#{meat_type},</if> 
+			<if test="food_name != null">#{food_name},</if> 
+			<if test="sort != null">#{sort},</if> 
+			<if test="creator_id != null">#{creator_id},</if> 
+			<if test="create_time != null">#{create_time},</if> 
+		</trim>
+		<![CDATA[)]]>
+	</insert>
+
+	<update id="updateMealMenu" parameterType="MealMenu">
+		update meal_menu
+		<set>
+			<if test="day_of_week != null">day_of_week=#{day_of_week},</if>
+			<if test="meal_date != null">meal_date=#{meal_date},</if>
+			<if test="state != null">state=#{state},</if>
+			<if test="time_type != null">time_type=#{time_type},</if>
+			<if test="food_type != null">food_type=#{food_type},</if>
+			<if test="meat_type != null">meat_type=#{meat_type},</if>
+			<if test="food_name != null">food_name=#{food_name},</if>
+			<if test="sort != null">sort=#{sort},</if>
+			<if test="creator_id != null">creator_id=#{creator_id},</if>
+			<if test="create_time != null">create_time=#{create_time},</if>
+		</set>
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</update>
+	
+	<delete id="deleteMealMenu" parameterType="MealMenu">
+		delete from meal_menu 
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="map.ids != null">
+				and id in
+				<foreach collection="map.ids" open="(" separator="," close=")"
+					index="index" item="item">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</delete>
+</mapper>
